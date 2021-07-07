@@ -6,7 +6,7 @@ As the name reveals, this is yet another PHP reverse shell, one more among hundr
 
 In the current version (1.0), its main functions support only linux systems, but i'm planning to make it work with Windows too.
 
-It's currently in its first version and I haven't tested it much yet, and there are still many things I intend to do and improve for the next versions, so please let me know if you've found any bugs. =)
+It's currently in its first version and I haven't tested it much yet, and *there are still many things I intend to do and improve for the next versions (**it's not done yet!**)*, so please let me know if you've found any bugs. =)
 
 ## Features
 * Single PHP file (no need to install packages, libs, or download tons of files)
@@ -49,7 +49,7 @@ It's currently in its first version and I haven't tested it much yet, and there 
 
 ## Screenshots
 
-![image](https://user-images.githubusercontent.com/3837916/124773354-45010700-df13-11eb-99c2-bce191425d01.png)
+![image](https://user-images.githubusercontent.com/3837916/124825185-acd24480-df49-11eb-976f-f9db9328eabe.png)
 
 ![image](https://user-images.githubusercontent.com/3837916/124777687-c4dca080-df16-11eb-94b7-ef77127c5f20.png)
 
