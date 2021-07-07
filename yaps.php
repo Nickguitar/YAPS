@@ -18,7 +18,7 @@ $resources = [
 "linenum"   => "https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh",
 "suggester" => "https://raw.githubusercontent.com/mzet-/linux-exploit-suggester/master/linux-exploit-suggester.sh"];
 
-$ip = '10.14.12.67';
+$ip = '127.0.0.1';
 $port = 7359;
 $color = true; // colored prompt (prettier :)
 $use_password = false; // only allows remote using the shell w/ password
