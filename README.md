@@ -43,7 +43,7 @@ It's currently in its first version and I haven't tested it much yet, and there 
 * `!color - Toggle PS1 color (locally only, no environment variable is changed)`
 * `!enum - Download LinPEAS and LinEnum to /tmp and get them ready to use`
 * `!info - list informations about the target (the enumeration I mentioned above)`
-* `!stabilize - Spawn a interactive reverse shell on another port (works w/ sudo, su, mysql, etc.)`
+* `!stabilize - Spawn an interactive reverse shell on another port (works w/ sudo, su, mysql, etc.)`
 * `!passwd - Password option (enable, disable, set, modify)`
 * `!php - Write and run PHP on the remote host`
 * `!suggester - Download Linux Exploit Suggester to /tmp and get it ready to use`
