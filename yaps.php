@@ -1,8 +1,9 @@
 <?php
 # YAPS - Yet Another PHP Shell
-# Version 1.0
+# Version 1.0 - 07/07/21
 # Made by Nicholas Ferreira
 # https://github.com/Nickguitar/YAPS
+# https://n.0x7359.com/?0b0011
 
 
 //error_reporting(0);
