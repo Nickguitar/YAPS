@@ -24,7 +24,7 @@ $color = true; // colored prompt (prettier :)
 $use_password = false; // only allows remote using the shell w/ password
 // sha512("vErY_Go0d_$aLt".sha512("password123"))
 $salt = 'v_3_r_Y___G_o_0_d___s_4_L_t';
-$pass_hash = "38f7bbf8ccd3fdf407e7922c9376e14adcd6c3e30f428817a60562b68a433728e02fda482e0b10fe02bf83e43c890b603ba5ed8d439c087511515dbec04a1536"; 
+$pass_hash = "38f7bbf8ccd3fdf407e7922c9376e14adcd6c3e30f428817a60562b68a433728e02fda482e0b10fe02bf83e43c890b603ba5ed8d439c087511515dbec04a1536"; // default: pass123
 
 ######################### END CONFIGS #########################
 
