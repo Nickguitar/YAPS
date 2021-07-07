@@ -1,5 +1,4 @@
-# YAPS
-**Y**et **A**nother **P**HP **S**hell
+# YAPS - **Y**et **A**nother **P**HP **S**hell
 
 Yeah, I know, I know... But that's it. =)
 
