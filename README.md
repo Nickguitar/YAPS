@@ -59,6 +59,10 @@ It's currently in its first version and I haven't tested it much yet, and *there
 
 ![image](https://user-images.githubusercontent.com/3837916/124776296-b641b980-df15-11eb-9a3c-396fe1544825.png)
 
+## Changelog
+
+**1.0.1 - 08/07/2021**
+- Changed `[x,y,z]` to `array(x,y,z)` to improve compatibility with older PHP versions
 
 ## Credits
 Some ideas were inspired by this tools:
