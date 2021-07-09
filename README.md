@@ -63,6 +63,7 @@ It's currently in its first version and I haven't tested it much yet, and *there
 
 **1.0.1 - 08/07/2021**
 - Changed `[x,y,z]` to `array(x,y,z)` to improve compatibility with older PHP versions
+- Changed payload for interactive shell to work with PHP<5.4
 
 ## Credits
 Some ideas were inspired by this tools:
