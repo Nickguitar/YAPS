@@ -66,7 +66,7 @@ It's currently in its first version and I haven't tested it much yet, and *there
 **v1.1 - 12/07/2021**
 - Added `!all-colors` to toggle terminal colors and work with colorless TTYs
 - Added `exit` command to close socket (leave shell)
-- Changed payload in `!stabilize` to set HISTSIZE=0
+- Changed payload in `!stabilize` to unset HISTSIZE and HISTFILE
 - Changed the method of obtaining CPU and meminfo in `!info` 
 
 **v1.0.1 - 08/07/2021**
