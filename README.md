@@ -25,9 +25,9 @@ It's currently in its first version and I haven't tested it much yet, and *there
 * (Semi) Stabilize shell
 
 ## Cons
-* Connection isn't encrypted (nc does not support SSL)
-* Not interactive (although you can spawn an interactive shell with `!stabilize`)
-  * CTRL+C breaks it; can't use arrows to navigate (unless you use `rlwrap`)
+* Connection isn't encrypted (yet) (nc does not support SSL)
+* Not fully interactive (although you can spawn an interactive shell with `!stabilize`)
+  * CTRL+C breaks it; can't use arrows to navigate (unless you use `rlwrap nc -lp <ip> <port>`)
 
 ## Usage
 1. Set up a TCP listener;
@@ -40,7 +40,7 @@ It's currently in its first version and I haven't tested it much yet, and *there
 
 ## Working commands
 * `!help - Display the help menu`
-* `!all-colors` - Toggle all colors (compatible with colorless TTY)
+* `!all-colors - Toggle all colors (compatible with colorless TTY)`
 * `!color - Toggle PS1 color (locally only, no environment variable is changed)`
 * `!enum - Download LinPEAS and LinEnum to /tmp and get them ready to use`
 * `!info - list informations about the target (the enumeration I mentioned above)`
