@@ -69,6 +69,9 @@ It's currently in its first version and I haven't tested it much yet, and *there
 
 ## Changelog
 
+**v1.2.1 - 17/07/2021**
+- Bugs fixed
+
 **v1.2 - 17/07/2021**
 - Added `!duplicate` to spawn another shell
 - Added update verification (`--update|-u`)
