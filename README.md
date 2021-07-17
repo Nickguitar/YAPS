@@ -23,6 +23,8 @@ It's currently in its first version and I haven't tested it much yet, and *there
 * Auto download LinPEAS, LinEnum or Linux Exploit Suggester
 * Write and run PHP code on remote host
 * (Semi) Stabilize shell
+* Duplicate connections
+* Auto update
 
 ## Cons
 * Connection isn't encrypted (yet) (nc does not support SSL)
@@ -62,6 +64,15 @@ It's currently in its first version and I haven't tested it much yet, and *there
 ![image](https://user-images.githubusercontent.com/3837916/124776296-b641b980-df15-11eb-9a3c-396fe1544825.png)
 
 ## Changelog
+
+**v1.2 - 17/07/2021**
+- Added `!duplicate` to spawn another shell
+- Added update verification (--update|-u)
+- Added socket via arguments
+- Added CLI arguments (--help|-h)
+- Changed stabilize shell method (doesn't freeze anymore)
+- Changed download method
+- Changed connection method via POST
 
 **v1.1 - 12/07/2021**
 - Added `!all-colors` to toggle terminal colors and work with colorless TTYs
