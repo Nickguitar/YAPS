@@ -1,6 +1,6 @@
 <?php
 # YAPS - Yet Another PHP Shell
-# Version 1.2.1 - 17/07/21
+# Version 1.2.2 - 18/07/21
 # Made by Nicholas Ferreira
 # https://github.com/Nickguitar/YAPS
 
