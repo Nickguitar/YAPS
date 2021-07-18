@@ -4,7 +4,7 @@ Yeah, I know, I know... But that's it. =)
 
 As the name reveals, this is yet another PHP reverse shell, one more among hundreds available out there. It is a single PHP file containing all its functions and you can control it via a simple netcat listener (`nc -lp 1337`).
 
-In the current version (1.0), its main functions support only linux systems, but i'm planning to make it work with Windows too.
+In the current version (1.2.2), its main functions support only linux systems, but i'm planning to make it work with Windows too.
 
 It's currently in its first version and I haven't tested it much yet, and *there are still many things I intend to do and improve for the next versions (**it's not done yet!**)*, so please let me know if you've found any bugs. =)
 
@@ -68,6 +68,12 @@ It's currently in its first version and I haven't tested it much yet, and *there
 ![image](https://user-images.githubusercontent.com/3837916/124776296-b641b980-df15-11eb-9a3c-396fe1544825.png)
 
 ## Changelog
+
+**v1.2.2 - 18/07/2021**
+- Changed 'update' function
+- Changed 'connect' function
+- Improved 'download' function
+- Bugs fixed
 
 **v1.2.1 - 17/07/2021**
 - Bugs fixed
