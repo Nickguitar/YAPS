@@ -631,8 +631,8 @@ function verify_update(){
 	$request = get_request($resources["verifyUpdateURL"]);
 	if($request) $newest_version = $request;
 
-	$newest_version_ = str_replace(".","",$newest_version); //get only numbers
-	$version_ = str_replace(".","",$version);
+	$newest_version_ = (int)str_replace(".","",$newest_version); //get only numbers
+	$version_ = (int)str_replace(".","",$version);
 
 	if($newest_version_ !== 0 && $newest_version_ > $version_){
 		echo red("[i]")." Your version is not up to date.\n".green("[DOWNLOAD v".str_replace("\n","",$newest_version)."]: ").$resources["updateURL"]."\n";
