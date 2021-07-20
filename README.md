@@ -23,8 +23,8 @@ It's currently in its first version and I haven't tested it much yet, and *there
 * Auto download LinPEAS, LinEnum or Linux Exploit Suggester
 * Write and run PHP code on remote host
 * (Semi) Stabilize shell
-* Duplicate connections
-* Auto update
+* [new] Duplicate connections
+* [new] Auto update
 
 ## Cons
 * Connection isn't encrypted (yet) (nc does not support SSL)
