@@ -4,7 +4,7 @@ Yeah, I know, I know... But that's it. =)
 
 As the name reveals, this is yet another PHP reverse shell, one more among hundreds available out there. It is a single PHP file containing all its functions and you can control it via a simple netcat listener (`nc -lp 1337`).
 
-In the current version (1.2.2), its main functions support only linux systems, but i'm planning to make it work with Windows too.
+In the current version (1.3), its main functions support only linux systems, but i'm planning to make it work with Windows too.
 
 It's currently in its first version and I haven't tested it much yet, and *there are still many things I intend to do and improve for the next versions (**it's not done yet!**)*, so please let me know if you've found any bugs. =)
 
@@ -23,8 +23,9 @@ It's currently in its first version and I haven't tested it much yet, and *there
 * Auto download LinPEAS, LinEnum or Linux Exploit Suggester
 * Write and run PHP code on remote host
 * (Semi) Stabilize shell
-* [new] Duplicate connections
-* [new] Auto update
+* Duplicate connections
+* Auto update
+* **[new] Infect PHP files with backdoors**
 
 ## Cons
 * Connection isn't encrypted (yet) (nc does not support SSL)
@@ -48,6 +49,7 @@ It's currently in its first version and I haven't tested it much yet, and *there
 * `!duplicate - Spawn another YAPS connection`
 * `!enum - Download LinPEAS and LinEnum to /tmp and get them ready to use`
 * `!info - list informations about the target (the enumeration I mentioned above)`
+* `!infect - Infect writable PHP files with backdoors`
 * `!stabilize - Spawn an interactive reverse shell on another port (works w/ sudo, su, mysql, etc.)`
 * `!passwd - Password option (enable, disable, set, modify)`
 * `!php - Write and run PHP on the remote host`
@@ -55,19 +57,28 @@ It's currently in its first version and I haven't tested it much yet, and *there
 
 ## Screenshots
 
-![image](https://user-images.githubusercontent.com/3837916/124825185-acd24480-df49-11eb-976f-f9db9328eabe.png)
+![image](https://user-images.githubusercontent.com/3837916/127257196-f8a6bb6f-36d7-4c8d-a51b-3a9df3e21eb6.png)
 
-![image](https://user-images.githubusercontent.com/3837916/124777687-c4dca080-df16-11eb-94b7-ef77127c5f20.png)
+![image](https://user-images.githubusercontent.com/3837916/127257433-778b1322-c82e-4857-897f-0f3f459dcb2b.png)
 
-![stabilize](https://user-images.githubusercontent.com/3837916/126051284-01165586-aeba-4dff-b192-913a17bdfe2e.gif)
+![stabilize](https://user-images.githubusercontent.com/3837916/127260504-3e78ab69-c3ee-411e-8a7d-f89fe5356a7f.gif)
 
-![duplicate](https://user-images.githubusercontent.com/3837916/126051287-7605240f-1845-460a-bb9c-82e0e0dfd96b.gif)
+![duplicate](https://user-images.githubusercontent.com/3837916/127260519-e672a78e-84c5-4a58-aa39-85dae94d9a50.gif)
+
+![infect](https://user-images.githubusercontent.com/3837916/127263363-e286357c-2be0-4890-8895-4bd5adadd3af.gif)
 
 ![image](https://user-images.githubusercontent.com/3837916/124774830-7dedab80-df14-11eb-9e84-c8d88b9f4de2.png)
 
-![image](https://user-images.githubusercontent.com/3837916/124776296-b641b980-df15-11eb-9a3c-396fe1544825.png)
+![image](https://user-images.githubusercontent.com/3837916/127260459-cc50203d-3ba6-408b-af0f-820756e9891d.png)
+
+
+
 
 ## Changelog
+
+**v1.3 - 28/07/2021**
+- Added `!infect` to infect PHP files with backdoors
+- Changed `!stabilize` payload (bugs fixed)
 
 **v1.2.2 - 18/07/2021**
 - Changed 'update' function
