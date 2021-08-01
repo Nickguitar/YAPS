@@ -4,7 +4,7 @@ Yeah, I know, I know... But that's it. =)
 
 As the name reveals, this is yet another PHP reverse shell, one more among hundreds available out there. It is a single PHP file containing all its functions and you can control it via a simple netcat listener (`nc -lp 1337`).
 
-In the current version (1.3), its main functions support only linux systems, but i'm planning to make it work with Windows too.
+In the current version (1.3.1), its main functions support only linux systems, but i'm planning to make it work with Windows too.
 
 It's currently in its first version and I haven't tested it much yet, and *there are still many things I intend to do and improve for the next versions (**it's not done yet!**)*, so please let me know if you've found any bugs. =)
 
