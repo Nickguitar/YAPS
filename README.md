@@ -76,6 +76,9 @@ It's currently in its first version and I haven't tested it much yet, and *there
 
 ## Changelog
 
+**v1.3.1 - 01/08/2021**
+- Bugs fixed
+
 **v1.3 - 28/07/2021**
 - Added `!infect` to infect PHP files with backdoors
 - Changed `!stabilize` payload (bugs fixed)
