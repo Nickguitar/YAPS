@@ -4,7 +4,7 @@ Yeah, I know, I know... But that's it. =)
 
 As the name reveals, this is yet another PHP reverse shell, one more among hundreds available out there. It is a single PHP file containing all its functions and you can control it via a simple netcat listener (`nc -lp 1337`).
 
-In the current version (1.3.1), its main functions support only linux systems, but i'm planning to make it work with Windows too.
+In the current version (1.4), its main functions support only linux systems, but i'm planning to make it work with Windows too.
 
 It's currently in its first version and I haven't tested it much yet, and *there are still many things I intend to do and improve for the next versions (**it's not done yet!**)*, so please let me know if you've found any bugs. =)
 
@@ -25,7 +25,8 @@ It's currently in its first version and I haven't tested it much yet, and *there
 * (Semi) Stabilize shell
 * Duplicate connections
 * Auto update
-* **[new] Infect PHP files with backdoors**
+* Infect PHP files with backdoors
+* **[NEW] Auto root reverse shell via pwnkit (CVE-2021-4034)**
 
 ## Cons
 * Connection isn't encrypted (yet) (nc does not support SSL)
@@ -54,27 +55,45 @@ It's currently in its first version and I haven't tested it much yet, and *there
 * `!passwd - Password option (enable, disable, set, modify)`
 * `!php - Write and run PHP on the remote host`
 * `!suggester - Download Linux Exploit Suggester to /tmp and get it ready to use`
+* `!pwnkit - Tries to exploit CVE-2021-4034 and spawn a root revere shell`
 
 ## Screenshots
 
-![image](https://user-images.githubusercontent.com/3837916/127257196-f8a6bb6f-36d7-4c8d-a51b-3a9df3e21eb6.png)
+### Current commands:
+![image](https://user-images.githubusercontent.com/3837916/152596714-f852a58a-8e19-4869-915a-94316099c6e6.png)
 
+### Some recon:
 ![image](https://user-images.githubusercontent.com/3837916/127257433-778b1322-c82e-4857-897f-0f3f459dcb2b.png)
 
+### Root reverse shell through CVE-2021-4034
+![pwn](https://user-images.githubusercontent.com/3837916/152597200-267704b9-0d50-4bcd-a68f-3c8ea6c74c21.gif)
+
+
+### Spawning a interactive shell
 ![stabilize](https://user-images.githubusercontent.com/3837916/127260504-3e78ab69-c3ee-411e-8a7d-f89fe5356a7f.gif)
 
+### Duplicating a YAPS session
 ![duplicate](https://user-images.githubusercontent.com/3837916/127260519-e672a78e-84c5-4a58-aa39-85dae94d9a50.gif)
 
+### Poisoning PHP files
 ![infect](https://user-images.githubusercontent.com/3837916/127263363-e286357c-2be0-4890-8895-4bd5adadd3af.gif)
 
-![image](https://user-images.githubusercontent.com/3837916/124774830-7dedab80-df14-11eb-9e84-c8d88b9f4de2.png)
+### Writing remote PHP code
+![remotephp](https://user-images.githubusercontent.com/3837916/124774830-7dedab80-df14-11eb-9e84-c8d88b9f4de2.png)
 
-![image](https://user-images.githubusercontent.com/3837916/127260459-cc50203d-3ba6-408b-af0f-820756e9891d.png)
+### Password protected shell
+![passprotected](https://user-images.githubusercontent.com/3837916/127260459-cc50203d-3ba6-408b-af0f-820756e9891d.png)
 
 
 
 
 ## Changelog
+
+**v1.4 - 04/02/2022**
+- Added `!pwnkit` to exploit CVE-2021-4034 and spawn a root reverse shell
+- Improved `verify_update()` function
+- Minor improvements
+
 
 **v1.3.1 - 01/08/2021**
 - Bugs fixed
