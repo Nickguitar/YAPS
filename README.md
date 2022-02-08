@@ -1,19 +1,18 @@
 # YAPS - **Y**et **A**nother **P**HP **S**hell
 
-Yeah, I know, I know... But that's it. =)
-
-As the name reveals, this is yet another PHP reverse shell, one more among hundreds available out there. It is a single PHP file containing all its functions and you can control it via a simple netcat listener (`nc -lp 1337`).
+Yes, as the name reveals, this is yet another PHP reverse shell, one more among hundreds available out there, but with some advantages. It is a single PHP file containing all its functions and you can control it via a simple TCP listener (e.g. `nc -lp 1337`).
 
 In the current version (1.4), its main functions support only linux systems, but i'm planning to make it work with Windows too.
 
-It's currently in its first version and I haven't tested it much yet, and *there are still many things I intend to do and improve for the next versions (**it's not done yet!**)*, so please let me know if you've found any bugs. =)
+It's currently in its first version and I haven't tested it much yet, and *there are still many things I intend to do and improve for the next versions (**it's not done yet!**)*, so please let me know if you've found any bugs or have some suggestion for feature or improvement. =)
+
 
 ## Features
 * Single PHP file (no need to install packages, libs, or download tons of files)
 * Works with netcat, ncat, socat, multi/handler, almost any listener
 * Customizable password protection
 * No logs in .bash_history
-* Can do some enumeration
+* Does some enumeration
   * Network info (interfaces, iptables rules, active ports)
   * User info
   * List SUID and GUID files
@@ -26,7 +25,7 @@ It's currently in its first version and I haven't tested it much yet, and *there
 * Duplicate connections
 * Auto update
 * Infect PHP files with backdoors
-* **[NEW] Auto root reverse shell via pwnkit (CVE-2021-4034)**
+* **[NEW] Auto reverse root shell via pwnkit (CVE-2021-4034)**
 
 ## Cons
 * Connection isn't encrypted (yet) (nc does not support SSL)
@@ -59,6 +58,9 @@ It's currently in its first version and I haven't tested it much yet, and *there
 
 ## Screenshots
 
+<details>
+  <summary>Click to expand screenshots section</summary>
+
 ### Current commands:
 ![image](https://user-images.githubusercontent.com/3837916/152596714-f852a58a-8e19-4869-915a-94316099c6e6.png)
 
@@ -67,7 +69,6 @@ It's currently in its first version and I haven't tested it much yet, and *there
 
 ### Root reverse shell through CVE-2021-4034
 ![pwn](https://user-images.githubusercontent.com/3837916/152597200-267704b9-0d50-4bcd-a68f-3c8ea6c74c21.gif)
-
 
 ### Spawning a interactive shell
 ![stabilize](https://user-images.githubusercontent.com/3837916/127260504-3e78ab69-c3ee-411e-8a7d-f89fe5356a7f.gif)
@@ -84,7 +85,7 @@ It's currently in its first version and I haven't tested it much yet, and *there
 ### Password protected shell
 ![passprotected](https://user-images.githubusercontent.com/3837916/127260459-cc50203d-3ba6-408b-af0f-820756e9891d.png)
 
-
+</details>
 
 
 ## Changelog
@@ -93,7 +94,6 @@ It's currently in its first version and I haven't tested it much yet, and *there
 - Added `!pwnkit` to exploit CVE-2021-4034 and spawn a root reverse shell
 - Improved `verify_update()` function
 - Minor improvements
-
 
 **v1.3.1 - 01/08/2021**
 - Bugs fixed
@@ -144,3 +144,6 @@ https://github.com/AonCyberLabs/Windows-Exploit-Suggester
 
 #### Pentest Monkey
 https://github.com/pentestmonkey/php-reverse-shell
+
+####  Arthepsy exploit for pwnkit
+https://github.com/arthepsy/CVE-2021-4034/
