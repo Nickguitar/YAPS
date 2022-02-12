@@ -5,7 +5,7 @@
 
 Yes, as the name reveals, this is yet another PHP reverse shell, one more among hundreds available out there, but with some advantages. It is a single PHP file containing all its functions and you can control it via a simple TCP listener (e.g. `nc -lp 1337`).
 
-In the current version (1.4), its main functions support only linux systems, but i'm planning to make it work with Windows too.
+In the current version (1.5), its main functions support only linux systems, but i'm planning to make it work with Windows too.
 
 It's currently in its first version and I haven't tested it much yet, and *there are still many things I intend to do and improve for the next versions (**it's not done yet!**)*, so please let me know if you've found any bugs or have some suggestion for feature or improvement. =)
 
@@ -25,10 +25,11 @@ It's currently in its first version and I haven't tested it much yet, and *there
 * Auto download LinPEAS, LinEnum or Linux Exploit Suggester
 * Write and run PHP code on remote host
 * (Semi) Stabilize shell
-* Duplicate connections
+* Duplicate as many connections as you want
 * Auto update
 * Infect PHP files with backdoors
-* **[NEW] Auto reverse root shell via pwnkit (CVE-2021-4034)**
+* Auto reverse root shell via pwnkit (CVE-2021-4034)
+* **[NEW] Send and execute shellcode**
 
 ## Cons
 * Connection isn't encrypted (yet) (nc does not support SSL)
@@ -53,7 +54,7 @@ It's currently in its first version and I haven't tested it much yet, and *there
 * `!enum - Download LinPEAS and LinEnum to /tmp and get them ready to use`
 * `!info - list informations about the target (the enumeration I mentioned above)`
 * `!infect - Infect writable PHP files with backdoors`
-* `!stabilize - Spawn an interactive reverse shell on another port (works w/ sudo, su, mysql, etc.)`
+* `!interactive - Spawn interactive reverse shells on other ports (works w/ sudo, su, mysql, etc.)`
 * `!passwd - Password option (enable, disable, set, modify)`
 * `!php - Write and run PHP on the remote host`
 * `!suggester - Download Linux Exploit Suggester to /tmp and get it ready to use`
@@ -65,19 +66,22 @@ It's currently in its first version and I haven't tested it much yet, and *there
   <summary>Click to expand screenshots section</summary>
 
 ### Current commands:
-![image](https://user-images.githubusercontent.com/3837916/152596714-f852a58a-8e19-4869-915a-94316099c6e6.png)
+![commands](https://user-images.githubusercontent.com/3837916/153728054-82ab16ab-99b1-4113-863a-01f8fbeb6d04.png)
 
-### Some recon:
+### Doing some recon:
 ![image](https://user-images.githubusercontent.com/3837916/127257433-778b1322-c82e-4857-897f-0f3f459dcb2b.png)
 
 ### Root reverse shell through CVE-2021-4034
 ![pwn](https://user-images.githubusercontent.com/3837916/152597200-267704b9-0d50-4bcd-a68f-3c8ea6c74c21.gif)
+ 
+### Sending and running shellcode!
+![shellcode](https://user-images.githubusercontent.com/3837916/153727126-a57c95a5-6447-4988-a57b-851b808df93e.gif)
 
 ### Spawning a interactive shell
-![stabilize](https://user-images.githubusercontent.com/3837916/127260504-3e78ab69-c3ee-411e-8a7d-f89fe5356a7f.gif)
+![interactive](https://user-images.githubusercontent.com/3837916/153728966-ed70a9ff-29c4-435e-898f-6180df7ac048.gif)
 
 ### Duplicating a YAPS session
-![duplicate](https://user-images.githubusercontent.com/3837916/127260519-e672a78e-84c5-4a58-aa39-85dae94d9a50.gif)
+![duplicate](https://user-images.githubusercontent.com/3837916/153727468-dbbb6ef6-6461-4f2a-95dc-32940d797a39.gif)
 
 ### Poisoning PHP files
 ![infect](https://user-images.githubusercontent.com/3837916/127263363-e286357c-2be0-4890-8895-4bd5adadd3af.gif)
@@ -92,6 +96,15 @@ It's currently in its first version and I haven't tested it much yet, and *there
 
 
 ## Changelog
+
+**v1.5 - 12/02/2022**
+- Added `!shellcode` to receive and run an arbitrary shellcode 
+- Improved `duplicate()` function (you can now a range of ports)
+- Changed function name from `stabilize` to `interactive`
+- Packed embeded codes to save space
+- Fixed broken links
+- Prepend "TERM=xterm" to all commands
+- Minor improvements
 
 **v1.4 - 04/02/2022**
 - Added `!pwnkit` to exploit CVE-2021-4034 and spawn a root reverse shell
