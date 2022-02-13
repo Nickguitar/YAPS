@@ -24,7 +24,7 @@ It's currently in its first version and I haven't tested it much yet, and *there
   *  List writable PHP files
 * Auto download LinPEAS, LinEnum or Linux Exploit Suggester
 * Write and run PHP code on remote host
-* (Semi) Stabilize shell
+* Spawn an interactive reverse shell
 * Duplicate as many connections as you want
 * Auto update
 * Infect PHP files with backdoors
@@ -33,7 +33,7 @@ It's currently in its first version and I haven't tested it much yet, and *there
 
 ## Cons
 * Connection isn't encrypted (yet) (nc does not support SSL)
-* Not fully interactive (although you can spawn an interactive shell with `!stabilize`)
+* Not fully interactive (although you can spawn an interactive shell with `!interactive`)
   * CTRL+C breaks it; can't use arrows to navigate (unless you use `rlwrap nc -lp <ip> <port>`)
 
 ## Usage
