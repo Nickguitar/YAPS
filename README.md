@@ -57,8 +57,9 @@ It's currently in its first version and I haven't tested it much yet, and *there
 * `!interactive - Spawn interactive reverse shells on other ports (works w/ sudo, su, mysql, etc.)`
 * `!passwd - Password option (enable, disable, set, modify)`
 * `!php - Write and run PHP on the remote host`
-* `!suggester - Download Linux Exploit Suggester to /tmp and get it ready to use`
 * `!pwnkit - Tries to exploit CVE-2021-4034 and spawn a root revere shell`
+* `!shellcode - Send and run shellcode on the remote host`
+* `!suggester - Download Linux Exploit Suggester to /tmp and get it ready to use`
 
 ## Screenshots
 
